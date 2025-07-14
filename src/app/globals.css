@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Critical CSS for immediate loading */
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #000000;
+  scroll-behavior: smooth;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Set default font family */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Bebas Neue for specific headings */
+.font-bebas {
+  font-family: 'Bebas Neue', 'Arial Black', cursive;
+}
+
+/* Fix any potential CSS conflicts */
+.bg-white {
+  background-color: #ffffff !important;
+}
+
+.bg-black {
+  background-color: #000000 !important;
+}
+
+.text-white {
+  color: #ffffff !important;
+}
+
+.text-black {
+  color: #000000 !important;
+}
+
+/* Ensure images load properly */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Fix button styles */
+button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Fix input styles */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Fix link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Homepage hero slider styles */
+.homepage-hero-slider {
+  height: calc(100vh - 120px) !important;
+  min-height: 500px !important;
+  max-height: 900px !important;
+  background-color: #000000 !important;
+  overflow: hidden !important;
+}
+
+/* Call for Price specific styling */
+.call-for-price {
+  font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  font-weight: 500 !important;
+  color: #bf9e47 !important;
+  text-align: center !important;
+}
+
+@media (max-width: 768px) {
+  .call-for-price {
+    font-size: clamp(1.25rem, 5vw, 2rem) !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* Hero button styling */
+.hero-button {
+  border-radius: 60px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 44.11%, rgba(255, 220, 154, 0.40) 89.29%), #BF9E47;
+  color: #FFF;
+  text-align: center;
+  font-family: Inter;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 19.6px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-button:hover {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.20) 44.11%, rgba(255, 220, 154, 0.60) 89.29%), #a16207;
+}
+
+/* Trending models section */
+.homepage-trending-models h2 {
+  color: #1E1E1E;
+  text-align: center;
+  font-family: "Bebas Neue";
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 72px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media(max-width: 767px) {
+  .homepage-trending-models h2 {
+    font-size: 44px;
+    line-height: 52px;
+  }
+}
+
+/* About section background */
+.homepage-about-section {
+  background: url("/bg1.webp") center / cover no-repeat !important;
+  background-color: #171212 !important;
+}
+
+/* Contact form styling */
+.homepage-contact-form {
+  background-color: #ffffff !important;
+}
+
+/* Footer styling */
+footer {
+  margin-top: 0 !important;
+}
+
+footer a:hover {
+  color: #a16207 !important;
+}
+
+/* Utility classes */
+.section-padding {
+  padding: 4rem 1rem;
+}
+
+.section-padding-large {
+  padding: 6rem 1rem;
+}
+
+.container-max-width {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.text-shadow-strong {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.backdrop-blur-strong {
+  backdrop-filter: blur(20px);
+}
+
+.gradient-overlay {
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+}
+
+/* Animation classes */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
