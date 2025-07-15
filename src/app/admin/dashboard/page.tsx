@@ -1,9 +1,5 @@
-'use client' 
-import { useAuth } from '../providers/AuthProvider'
-export function Dashboard() {
-  const { user, logout } = useAuth()
-
-return (
+import { Dashboard } from '../../components/Dashboard'
+import { ProtectedRoute } from '../../components/ProtectedRoute'
 
 export default function Page() {
   return (
