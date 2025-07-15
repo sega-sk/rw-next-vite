@@ -1,4 +1,3 @@
-'use client'
 import { FavoritesPage } from '../components/FavoritesPage'
 
 export default function Page() {
