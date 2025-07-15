@@ -1,10 +1,8 @@
-import { Dashboard } from '../../../components/Dashboard'
-import { ProtectedRoute } from '../../../components/ProtectedRoute'
-
 export default function Page() {
   return (
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
+    <div>
+      <h1>Admin Dashboard</h1>
+      {/* Add your dashboard content here */}
+    </div>
   )
 }
