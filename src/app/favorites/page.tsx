@@ -1,5 +1,5 @@
 import { FavoritesPage } from '../components/FavoritesPage'
 
-export default function Page() {
+export default function Favorites() {
   return <FavoritesPage />
 }

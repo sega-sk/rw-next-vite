@@ -1,5 +1,5 @@
 import { CatalogPage } from '../components/CatalogPage'
 
-export default function Page() {
+export default function Catalog() {
   return <CatalogPage />
 }

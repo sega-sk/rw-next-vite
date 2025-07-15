@@ -1,12 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Package, Star, ShoppingBag, TrendingUp, Users, DollarSign, MessageSquare } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { apiService } from '../../services/api';
-import { leadsService } from '../../services/leads';
-import { useApi } from '../../hooks/useApi';
-import OptimizedImage from '../../components/UI/OptimizedImage';
-import { formatPrice } from '../../utils/priceUtils';
+import { useAuth } from '../../../contexts/AuthContext';
+import { apiService } from '../../../services/api';
+import { leadsService } from '../../../services/leads';
+import { useApi } from '../../../hooks/useApi';
+import OptimizedImage from '../../../components/UI/OptimizedImage';
+import { formatPrice } from '../../../utils/priceUtils';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
