@@ -1296,6 +1296,7 @@ footer a:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+}
 
 /* Product Contact Form Styles */
 .product-contact-form {
@@ -2088,10 +2089,14 @@ button:disabled {
   .md\:text-5xl {
     font-size: 3rem;
     line-height: 1;
+  }
 .product-detail-main section h2 {
   margin-bottom: 20px;
+}
   .lg\:text-5xl {
     font-size: 3rem;
+  }
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .product-hero-slider {
@@ -2113,6 +2118,9 @@ button:disabled {
   }
   .lg\:text-6xl {
     font-size: 3.75rem;
+  }
+}
+
 /* Fix for product thumbnails */
 .product-thumbnails-wrapper .w-20.h-16 {
   width: 120px !important;
