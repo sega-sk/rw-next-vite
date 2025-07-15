@@ -2,10 +2,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export function Homepage() {
+// Remove the export from the function declaration
+function Homepage() {
   const router = useRouter()
   const [showSearchModal, setShowSearchModal] = useState(false)
-
+  
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="bg-white shadow-sm relative z-40">
@@ -27,7 +28,6 @@ export function Homepage() {
           </div>
         </div>
       </header>
-
       <div className="homepage-hero-slider relative overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
         <div className="absolute inset-0">
           <img src="/reel wheel hero_first slide.webp" alt="Reel Wheels Experience" className="w-full h-full object-cover" />
@@ -51,7 +51,6 @@ export function Homepage() {
           </div>
         </div>
       </div>
-
       <footer className="bg-black text-white py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="text-center text-xs md:text-sm text-gray-400">
@@ -62,3 +61,6 @@ export function Homepage() {
     </div>
   )
 }
+
+// Add default export
+export default Homepage
