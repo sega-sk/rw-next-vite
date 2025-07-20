@@ -149,6 +149,13 @@ export default function AddProduct() {
   const [bgRemoveError, setBgRemoveError] = useState('');
   const [bgRemoveCount, setBgRemoveCount] = useState(0);
 
+  // Track background removal count for this product
+  useEffect(() => {
+    if (isEditing && editProduct?.id) {
+      setBgRemoveCount(getBgRemoveCount(editProduct.id));
+    }
+  }, [isEditing, editProduct?.id]);
+
   // Fetch product data for editing
   const { data: editProduct, loading: loadingProduct } = useApi(
     () => editProductId ? apiService.getProduct(editProductId) : Promise.resolve(null),
@@ -402,24 +409,6 @@ export default function AddProduct() {
     navigate('/admin/product-list');
   };
 
-  // Track background removal count for this product
-  useEffect(() => {
-    if (isEditing && editProduct?.id) {
-      setBgRemoveCount(getBgRemoveCount(editProduct.id));
-    }
-  }, [isEditing, editProduct?.id]);
-
-  // Show loading state when fetching product for editing
-  if (isEditing && loadingProduct) {
-    return (
-      <div className="p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
   // --- Image Reordering Handlers ---
   const handleDragStart = (idx: number) => setDraggedIndex(idx);
   const handleDragOver = (e: React.DragEvent, idx: number) => {
@@ -433,7 +422,7 @@ export default function AddProduct() {
   };
   const handleDragEnd = () => setDraggedIndex(null);
 
-  // --- Background Remove Handler ---
+  // --- Remove Background Handler ---
   const handleRemoveBackground = async () => {
     setBgRemoveError('');
     if (!formData.images[0]) return;
@@ -443,8 +432,8 @@ export default function AddProduct() {
     }
     setBgRemoving(true);
     try {
-      // Replace with your actual API endpoint
-      const apiUrl = `/api/remove-background`;
+      // Call the API endpoint for background removal
+      const apiUrl = `/api/products/${editProduct?.id || ''}/clear-background`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
