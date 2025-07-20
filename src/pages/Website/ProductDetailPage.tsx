@@ -266,6 +266,7 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+      {/* End Product Detail Main */}
 
       {/* Thumbnails Slider and Product Info Row */}
       <div className="product-main-content grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
@@ -323,7 +324,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
-
+      </div>
       {/* Product Description and Keywords */}
       {(currentProduct.description || currentProduct.keywords?.length > 0) && (
         <div className="mb-16-none">
@@ -376,7 +377,6 @@ export default function ProductDetailPage() {
 
       {/* Memorabilia and Merchandise Row Layout */}
       <div className="memorabilia-merchandise-row mt-16 w-full">
-
         {/* Merchandise Section */}
         {merchandiseItems.length > 0 && (
           <div>
@@ -439,6 +439,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               ))}
+
             </div>
           </div>
         )}
