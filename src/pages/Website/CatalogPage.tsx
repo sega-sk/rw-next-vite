@@ -206,11 +206,10 @@ export default function CatalogPage() {
     }
   );
 
-  // Use API data if available, otherwise use dummy data
+  // Use API data if available, otherwise use demo fallback
   const allProducts = productsData?.rows && productsData.rows.length > 0
     ? productsData.rows
     : [
-        // Fallback demo product if API returns empty
         {
           id: 'demo-1',
           title: 'Demo Batmobile',
