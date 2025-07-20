@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/leadProxy.js": {
+    "api/leadProxy.ts": {
       "runtime": "nodejs20.x"
     }
   },
