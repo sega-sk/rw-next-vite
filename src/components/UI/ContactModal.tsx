@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 import NotificationBanner from './NotificationBanner';
 import { useNotification } from '../../hooks/useNotification';
+import { leadsService } from '../../services/leads';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -74,18 +75,25 @@ export default function ContactModal({
     }
     setIsSubmitting(true);
     try {
-      // Send to API endpoint for product page form
-      const response = await fetch(`/api/${apiSlug}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          productTitle,
-          productPrice,
-          formType: formData.mainOption === 'buy' ? 'contact_us' : 'rent_a_product'
-        }),
-      });
-      if (!response.ok) throw new Error('Failed to send your request');
+      // Use the correct API structure for lead submission
+      const leadData = {
+        form_slug: (formData.mainOption === 'buy' ? 'contact_us' : 'rent_a_product') as 'contact_us' | 'rent_a_product',
+        appendices: {
+          product_id: productTitle,
+          rental_period: formData.rentPeriod || '',
+          start_date: '',
+          duration: '',
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone_number: formData.phone,
+          comments: formData.comment || `${formData.mainOption === 'buy' ? 'Purchase' : 'Rental'} inquiry for ${productTitle}. Price: ${productPrice}`
+        }
+      };
+
+      // Use the leads service instead of fetch
+      await leadsService.submitLead(leadData);
+
       setFormData({
         mainOption: '',
         rentPeriod: '',
@@ -96,19 +104,24 @@ export default function ContactModal({
         comment: '',
         consent: true
       });
-      logIfEnabled('Contact form submitted:', { ...formData, productTitle, productPrice });
+      
+      logIfEnabled('Contact form submitted:', leadData);
+      
       if (formData.mainOption === 'buy') {
-        notify('Purchase request submitted! The Dark Knight will contact you soon to finalize your Batmobile purchase.', 'success');
+        notify('Purchase request submitted! We will contact you soon to finalize your purchase.', 'success');
       } else {
-        notify(`${formData.rentPeriod.charAt(0).toUpperCase() + formData.rentPeriod.slice(1)} rental request submitted! Wayne Enterprises will contact you soon to arrange your Batmobile rental.`, 'success');
+        notify(`${formData.rentPeriod.charAt(0).toUpperCase() + formData.rentPeriod.slice(1)} rental request submitted! We will contact you soon to arrange your rental.`, 'success');
       }
+      
       setTimeout(() => {
         notify('Thank you! We received your request and will be in touch soon.', 'success');
       }, 800);
+      
       onClose();
     } catch (err) {
       logIfEnabled('Contact form error:', err);
-      notify('Failed to send your request. Please try again.', 'error');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send your request. Please try again.';
+      notify(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
     }

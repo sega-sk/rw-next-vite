@@ -47,29 +47,49 @@ interface LeadsListResponse {
 
 class LeadsService {
   private readonly API_BASE_URL = 'https://reel-wheel-api-x92jj.ondigitalocean.app';
+  private readonly API_KEY = 'ff8c5b7d42cd8988d73b10098a50b0e6c94afb83c4dc1e4d30a6f5b88b2b4f47';
 
-  // Submit a new lead via your backend proxy (X-API-Key is handled server-side)
+  // Submit a new lead directly to API (public endpoint with API key)
   async submitLead(data: LeadCreate): Promise<Lead> {
     try {
-      // ✅ SAFE: Uses proxy endpoint, API key stays on server
-      const response = await fetch('/api/submit-lead', {
+      console.log('Submitting lead data:', data);
+      
+      const response = await fetch(`${this.API_BASE_URL}/v1/leads/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-          // No X-API-Key here - handled by the proxy
+          'Content-Type': 'application/json',
+          'X-API-KEY': this.API_KEY,
+          // Add additional security headers
+          'Accept': 'application/json',
+          'User-Agent': 'ReelWheels-Web/1.0',
         },
         body: JSON.stringify(data),
       });
 
+      console.log('API Response Status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({ detail: 'Network error' }));
+        console.error('API Error Response:', errorData);
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('Lead submitted successfully:', result.id);
+      return result;
     } catch (error) {
       console.error('Failed to submit lead:', error);
-      throw error;
+      
+      // Provide user-friendly error messages
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network connection failed. Please check your internet connection and try again.');
+      }
+      
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('An unexpected error occurred. Please try again later.');
     }
   }
 
@@ -84,7 +104,8 @@ class LeadsService {
         ...options,
         headers: {
           ...authService.getAuthHeaders(),
-          // Remove X-API-Key from here - it should only be used for public lead submissions
+          'Accept': 'application/json',
+          'User-Agent': 'ReelWheels-Admin/1.0',
           ...options.headers,
         },
       });
@@ -98,6 +119,8 @@ class LeadsService {
             ...options,
             headers: {
               ...authService.getAuthHeaders(),
+              'Accept': 'application/json',
+              'User-Agent': 'ReelWheels-Admin/1.0',
               ...options.headers,
             },
           });
