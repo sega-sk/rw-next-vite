@@ -185,13 +185,13 @@ export default function CatalogPage() {
     () => searchTerm.trim() 
       ? apiService.searchProducts({
           q: searchTerm,
-          product_types: selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
+          product_types: selectedFilters.productType && selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
           limit: 100
         })
       : apiService.getProducts({
-          product_types: selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
-          movies: selectedFilters.movie !== 'Any' ? [selectedFilters.movie] : undefined,
-          genres: selectedFilters.genre !== 'Any' ? [selectedFilters.genre] : undefined,
+          product_types: selectedFilters.productType && selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
+          movies: selectedFilters.movie && selectedFilters.movie !== 'Any' ? [selectedFilters.movie] : undefined,
+          genres: selectedFilters.genre && selectedFilters.genre !== 'Any' ? [selectedFilters.genre] : undefined,
           sort: sortBy === 'Featured' ? '-created_at' : sortBy.toLowerCase(),
           limit: 100
         }),
