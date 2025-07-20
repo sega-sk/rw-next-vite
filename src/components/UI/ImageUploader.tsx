@@ -34,6 +34,7 @@ export default function ImageUploader({ images, onImagesChange, maxImages = 10 }
     const files = event.target.files;
     if (!files) return;
 
+    // Upload all files in parallel, allow multiple images at once
     const uploadPromises = Array.from(files).map(async (file) => {
       try {
         const result = await uploadFile(file);
@@ -47,7 +48,11 @@ export default function ImageUploader({ images, onImagesChange, maxImages = 10 }
     try {
       const uploadedUrls = await Promise.all(uploadPromises);
       const validUrls = uploadedUrls.filter(url => url !== null) as string[];
+      // Add all uploaded images at once, up to maxImages
       onImagesChange([...images, ...validUrls].slice(0, maxImages));
+      if (validUrls.length > 0) {
+        console.log('Images uploaded:', validUrls);
+      }
     } catch (error) {
       console.error('Upload error:', error);
     }

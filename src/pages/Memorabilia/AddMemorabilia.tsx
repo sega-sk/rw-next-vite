@@ -25,8 +25,18 @@ export default function AddMemorabilia() {
     (data: MemorabiliaCreate) => apiService.createMemorabilia(data)
   );
   const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 100 }),
+    () => apiService.getProducts({ limit: 1000 }),
     { immediate: true, cacheKey: 'memo-add-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+  );
+
+  // Pagination for related products
+  const [productPage, setProductPage] = useState(1);
+  const productsPerPage = 30;
+  const allProducts = allProductsData?.rows || [];
+  const totalProductPages = Math.ceil(allProducts.length / productsPerPage);
+  const paginatedProducts = allProducts.slice(
+    (productPage - 1) * productsPerPage,
+    productPage * productsPerPage
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,13 +65,20 @@ export default function AddMemorabilia() {
     e.preventDefault();
     if (!formData.title.trim()) {
       alert('Title is required.');
+      console.log('Memorabilia create failed: Title is required');
       return;
     }
     try {
-      await createMemorabilia(formData);
+      const res = await createMemorabilia(formData);
+      console.log('Memorabilia created:', res);
       alert('Memorabilia created successfully!');
+      setTimeout(() => {
+        alert('Saved! Your memorabilia was added.');
+        console.log('Memorabilia save message shown');
+      }, 500);
       navigate('/admin/memorabilia');
     } catch (error) {
+      console.error('Create memorabilia error:', error);
       alert('Failed to create memorabilia.');
     }
   };
@@ -89,7 +106,7 @@ export default function AddMemorabilia() {
             onChange={handleInputChange}
           />
         </FormField>
-        <FormField label="Connection Keywords">
+        <FormField label="Keywords">
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2 mb-2">
               {(formData.keywords || []).map((tag, idx) => (
@@ -120,7 +137,7 @@ export default function AddMemorabilia() {
         </FormField>
         <FormField label="Related Products">
           <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
-            {(allProductsData?.rows || []).map((product) => (
+            {paginatedProducts.map((product) => (
               <label key={product.id} className="flex items-center space-x-2 mb-1">
                 <input
                   type="checkbox"
@@ -139,6 +156,23 @@ export default function AddMemorabilia() {
                 <span className="text-xs">{product.title}</span>
               </label>
             ))}
+            {totalProductPages > 1 && (
+              <div className="flex justify-center mt-2 gap-2">
+                <button
+                  type="button"
+                  disabled={productPage === 1}
+                  onClick={() => setProductPage(productPage - 1)}
+                  className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                >Prev</button>
+                <span className="text-xs">{productPage} / {totalProductPages}</span>
+                <button
+                  type="button"
+                  disabled={productPage === totalProductPages}
+                  onClick={() => setProductPage(productPage + 1)}
+                  className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                >Next</button>
+              </div>
+            )}
           </div>
         </FormField>
         <div className="flex justify-end space-x-4">

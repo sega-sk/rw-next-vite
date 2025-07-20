@@ -147,17 +147,14 @@ export default function MerchandisePage() {
   const { data: merchandiseData, loading, execute: refetchMerchandise } = useApi(
     () => apiService.getMerchandise({ limit: 100 }),
     { 
-      immediate: true,
-      cacheKey: slug ? `merchandise-for-product-${slug}` : `merchandise-all`,
-      cacheTTL: 2 * 60 * 1000,
-      staleWhileRevalidate: true
+      immediate: true
     }
   );
 
   // If on a product's merchandise page, fetch the product to get its connections
   const { data: productData } = useApi(
     () => slug ? apiService.getProduct(slug) : Promise.resolve(null),
-    { immediate: !!slug, cacheKey: `product-for-merchandise-${slug}` }
+    { immediate: !!slug }
   );
 
   // Filter merchandise by connection if on a product's merchandise page
@@ -187,19 +184,18 @@ export default function MerchandisePage() {
   const sortedItems = [...filteredItems].sort((a, b) => {
     switch (sortBy) {
       case 'Featured':
+      case 'Newest':
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       case 'Price: Low to High':
         return parseFloat(a.price || '0') - parseFloat(b.price || '0');
       case 'Price: High to Low':
         return parseFloat(b.price || '0') - parseFloat(a.price || '0');
-      case 'Newest':
-        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       case 'A-Z':
-        return a.title.localeCompare(b.title);
+        return (a.title || '').localeCompare(b.title || '');
       case 'Z-A':
-        return b.title.localeCompare(a.title);
+        return (b.title || '').localeCompare(a.title || '');
       default:
-        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+        return 0;
     }
   });
 

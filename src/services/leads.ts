@@ -48,16 +48,14 @@ interface LeadsListResponse {
 class LeadsService {
   private readonly API_BASE_URL = 'https://reel-wheel-api-x92jj.ondigitalocean.app';
 
-  // Submit a new lead without authentication (public endpoint)
+  // Submit a new lead via your backend proxy (never expose X-API-Key in client)
   async submitLead(data: LeadCreate): Promise<Lead> {
     try {
-      console.log('Submitting lead:', data);
-      
-      const response = await fetch(`${this.API_BASE_URL}/v1/leads/`, {
+      // POST to your backend API route, which will add the X-API-Key server-side
+      const response = await fetch('/api/submit-lead', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': '24fb20f2-d743-4ab0-a9c0-597203aea92f-f747e6cc-112f-493c-856d-1888b5b63e8f'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(data),
       });

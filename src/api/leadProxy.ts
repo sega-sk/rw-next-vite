@@ -6,7 +6,8 @@ export default async function leadProxy(req: Request, res: Response) {
     return;
   }
 
-  const apiKey = process.env.LEADS_API_KEY;
+  // Use Vercel env variable IMPORTANT_F_F_K for the API key
+  const apiKey = process.env.IMPORTANT_F_F_K;
   if (!apiKey) {
     res.status(500).json({ error: 'Missing API key' });
     return;

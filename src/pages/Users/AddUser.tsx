@@ -28,15 +28,22 @@ export default function AddUser() {
     setAlert(null);
     if (!formData.email.trim() || !formData.password.trim()) {
       setAlert({ type: 'error', message: 'Email and password are required.' });
+      console.log('User create failed: Email and password required');
       return;
     }
     setIsSubmitting(true);
     try {
       await apiService.createUser(formData);
       setAlert({ type: 'success', message: 'User created successfully!' });
-      setTimeout(() => navigate('/admin/users'), 1200);
+      console.log('User created:', formData.email);
+      setTimeout(() => {
+        navigate('/admin/users');
+        alert('User created!');
+        console.log('User create message shown');
+      }, 1200);
     } catch (err: any) {
       setAlert({ type: 'error', message: err?.message || 'Failed to create user. Please try again.' });
+      console.error('User create error:', err);
     } finally {
       setIsSubmitting(false);
     }

@@ -141,17 +141,14 @@ export default function MemorabiliaPage() {
   const { data: memorabiliaData, loading, execute: refetchMemorabilia } = useApi(
     () => apiService.getMemorabilia({ limit: 100 }),
     { 
-      immediate: true,
-      cacheKey: slug ? `memorabilia-for-product-${slug}` : `memorabilia-all`,
-      cacheTTL: 2 * 60 * 1000,
-      staleWhileRevalidate: true
+      immediate: true
     }
   );
 
   // If on a product's memorabilia page, fetch the product to get its connections
   const { data: productData } = useApi(
     () => slug ? apiService.getProduct(slug) : Promise.resolve(null),
-    { immediate: !!slug, cacheKey: `product-for-memorabilia-${slug}` }
+    { immediate: !!slug }
   );
 
   // Filter memorabilia by connection if on a product's memorabilia page
@@ -176,15 +173,14 @@ export default function MemorabiliaPage() {
   const sortedItems = [...filteredItems].sort((a, b) => {
     switch (sortBy) {
       case 'Featured':
-        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       case 'Newest':
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       case 'A-Z':
-        return a.title.localeCompare(b.title);
+        return (a.title || '').localeCompare(b.title || '');
       case 'Z-A':
-        return b.title.localeCompare(a.title);
+        return (b.title || '').localeCompare(a.title || '');
       default:
-        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+        return 0;
     }
   });
 
@@ -330,13 +326,36 @@ export default function MemorabiliaPage() {
         ) : (
           <div className="memorabilia-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {currentItems.map((item) => (
-              <MemorabiliaCard
-                key={item.id}
-                item={item}
-                onItemClick={handleItemClick}
-                onFavoriteToggle={toggleFavorite}
-                isFavorite={isFavorite}
-              />
+              <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                <div className="relative overflow-hidden rounded-lg">
+                  <OptimizedImage
+                    src={item.photos?.[0] || '/memorabilia_balanced.webp'}
+                    alt={item.title}
+                    size="card"
+                    className="no-transform-here w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute top-4 left-4 bg-purple-500 text-white px-2 py-1 rounded text-sm font-medium">
+                    MEMORABILIA
+                  </div>
+                </div>
+                <div className="p-4 md:p-6">
+                  <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{item.title}</h3>
+                  <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{item.subtitle}</p>
+                  <div className="mb-2 text-xs text-gray-500">ID: {item.id}</div>
+                  <div className="mb-2 text-xs text-gray-500">Slug: {item.slug}</div>
+                  <div className="mb-2 text-xs text-gray-500">Description: {item.description}</div>
+                  <div className="mb-2 text-xs text-gray-500">Keywords: {item.keywords?.join(', ')}</div>
+                  <div className="mb-2 text-xs text-gray-500">Created: {item.created_at}</div>
+                  <div className="mb-2 text-xs text-gray-500">Updated: {item.updated_at}</div>
+                  <div className="flex flex-wrap gap-1">
+                    {item.keywords?.map((tag, index) => (
+                      <span key={index} className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded font-inter">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}

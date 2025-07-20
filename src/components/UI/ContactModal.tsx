@@ -77,13 +77,18 @@ export default function ContactModal({
         }),
       });
       if (!response.ok) throw new Error('Failed');
+      console.log('Contact form submitted:', { ...formData, productTitle, productPrice });
       if (formData.mainOption === 'buy') {
         notify('Purchase request submitted! The Dark Knight will contact you soon to finalize your Batmobile purchase.', 'success');
       } else {
         notify(`${formData.rentPeriod.charAt(0).toUpperCase() + formData.rentPeriod.slice(1)} rental request submitted! Wayne Enterprises will contact you soon to arrange your Batmobile rental.`, 'success');
       }
+      setTimeout(() => {
+        notify('Thank you! We received your request and will be in touch soon.', 'success');
+      }, 800);
       onClose();
     } catch (err) {
+      console.error('Contact form error:', err);
       notify('Failed to send your request. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);

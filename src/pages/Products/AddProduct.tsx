@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, Plus, X, Edit, Trash2 } from 'lucide-react';
+import { Upload, Plus, X, Edit, Trash2, GripVertical, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToastContext } from '../../contexts/ToastContext';
 import Button from '../../components/UI/Button';
@@ -79,6 +79,27 @@ function cleanProductPayload(data: ProductCreate | any): ProductCreate {
   return cleaned;
 }
 
+// Add a helper for drag-and-drop reordering
+function reorderArray<T>(arr: T[], from: number, to: number): T[] {
+  const updated = [...arr];
+  const [removed] = updated.splice(from, 1);
+  updated.splice(to, 0, removed);
+  return updated;
+}
+
+// Add a helper for localStorage background removal count
+function getBgRemoveCount(productId: string): number {
+  if (!productId) return 0;
+  const key = `bgRemoveCount:${productId}`;
+  return Number(localStorage.getItem(key) || '0');
+}
+function incrementBgRemoveCount(productId: string) {
+  if (!productId) return;
+  const key = `bgRemoveCount:${productId}`;
+  const count = getBgRemoveCount(productId) + 1;
+  localStorage.setItem(key, String(count));
+}
+
 export default function AddProduct() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,6 +144,10 @@ export default function AddProduct() {
   const [newMovie, setNewMovie] = useState('');
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [bgRemoving, setBgRemoving] = useState(false);
+  const [bgRemoveError, setBgRemoveError] = useState('');
+  const [bgRemoveCount, setBgRemoveCount] = useState(0);
 
   // Fetch product data for editing
   const { data: editProduct, loading: loadingProduct } = useApi(
@@ -311,6 +336,7 @@ export default function AddProduct() {
 
     if (!formData.title.trim()) {
       alert('Product title is required.');
+      console.log('Product create failed: Title required');
       return;
     }
 
@@ -323,9 +349,19 @@ export default function AddProduct() {
           data: cleanedPayload,
         });
         success('Product updated!', 'Product updated successfully!');
+        console.log('Product updated:', editProduct.id);
+        setTimeout(() => {
+          alert('Product updated!');
+          console.log('Product update message shown');
+        }, 500);
       } else {
         await createProduct(cleanedPayload);
         success('Product created!', 'Product created successfully!');
+        console.log('Product created:', formData.title);
+        setTimeout(() => {
+          alert('Product created!');
+          console.log('Product create message shown');
+        }, 500);
       }
       
       navigate('/admin/product-list');
@@ -358,6 +394,13 @@ export default function AddProduct() {
     navigate('/admin/product-list');
   };
 
+  // Track background removal count for this product
+  useEffect(() => {
+    if (isEditing && editProduct?.id) {
+      setBgRemoveCount(getBgRemoveCount(editProduct.id));
+    }
+  }, [isEditing, editProduct?.id]);
+
   // Show loading state when fetching product for editing
   if (isEditing && loadingProduct) {
     return (
@@ -368,6 +411,54 @@ export default function AddProduct() {
       </div>
     );
   }
+
+  // --- Image Reordering Handlers ---
+  const handleDragStart = (idx: number) => setDraggedIndex(idx);
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === idx) return;
+    setFormData(prev => ({
+      ...prev,
+      images: reorderArray(prev.images, draggedIndex, idx)
+    }));
+    setDraggedIndex(idx);
+  };
+  const handleDragEnd = () => setDraggedIndex(null);
+
+  // --- Background Remove Handler ---
+  const handleRemoveBackground = async () => {
+    setBgRemoveError('');
+    if (!formData.images[0]) return;
+    if (isEditing && editProduct?.id && bgRemoveCount >= 2) {
+      setBgRemoveError('Background removal limit reached for this product.');
+      return;
+    }
+    setBgRemoving(true);
+    try {
+      // Replace with your actual API endpoint
+      const apiUrl = `/api/remove-background`;
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: formData.images[0] }),
+      });
+      if (!res.ok) throw new Error('Failed to remove background');
+      const data = await res.json();
+      if (!data?.imageUrl) throw new Error('No image returned');
+      setFormData(prev => ({
+        ...prev,
+        images: [data.imageUrl, ...prev.images.slice(1)],
+      }));
+      if (isEditing && editProduct?.id) {
+        incrementBgRemoveCount(editProduct.id);
+        setBgRemoveCount(getBgRemoveCount(editProduct.id));
+      }
+    } catch (err: any) {
+      setBgRemoveError(err.message || 'Failed to remove background');
+    } finally {
+      setBgRemoving(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -684,36 +775,69 @@ export default function AddProduct() {
             {/* Product Images */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Images</h3>
-              <ImageUploader 
-                images={formData.images}
-                onImagesChange={(images) => setFormData(prev => ({ ...prev, images }))}
-              />
-
-              {/* Background for Product Page */}
-              <div className="border-t pt-4 mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-700">Background for Product Page</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      name="is_background_image_activated"
-                      checked={formData.is_background_image_activated}
-                      onChange={handleInputChange}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-
-                {formData.is_background_image_activated && (
-                  <div className="space-y-4">
-                    <ImageUploader 
-                      images={backgroundImages}
-                      onImagesChange={setBackgroundImages}
-                      maxImages={1}
-                    />
+              {/* --- Image Reorder UI --- */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                {formData.images.map((img, idx) => (
+                  <div
+                    key={img + idx}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={e => handleDragOver(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group border-2 rounded-lg p-1 bg-gray-50 ${draggedIndex === idx ? 'border-blue-500' : 'border-gray-200'}`}
+                    style={{ cursor: 'grab', width: 100, height: 80 }}
+                  >
+                    <span className="absolute left-1 top-1 text-gray-400 cursor-move">
+                      <GripVertical size={16} />
+                    </span>
+                    <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover rounded" />
+                    {/* Remove button for each image */}
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        images: prev.images.filter((_, i) => i !== idx)
+                      }))}
+                      tabIndex={-1}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                )}
+                ))}
+              </div>
+              {/* --- End Image Reorder UI --- */}
+              <ImageUploader
+                images={formData.images}
+                onImagesChange={images => setFormData(prev => ({ ...prev, images }))}
+              />
+              {/* --- Remove Background Action --- */}
+              {formData.images[0] && (
+                <div className="mt-4 flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveBackground}
+                    disabled={bgRemoving || (isEditing && editProduct?.id && bgRemoveCount >= 2)}
+                  >
+                    {bgRemoving ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
+                    Remove Background (first image)
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    {isEditing && editProduct?.id
+                      ? `(${2 - bgRemoveCount} left)`
+                      : '(max 2 per product)'}
+                  </span>
+                  {bgRemoveError && (
+                    <span className="text-xs text-red-600 ml-2">{bgRemoveError}</span>
+                  )}
+                </div>
+              )}
+              {/* --- End Remove Background Action --- */}
+              {/* Save reordered images info */}
+              <div className="mt-2 text-xs text-gray-500">
+                Drag and drop to reorder images. The first image is used as the main product image.
               </div>
             </div>
 

@@ -110,7 +110,8 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
         <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{product.title}</h3>
         <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{product.subtitle}</p>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          {/* REMOVE PRICE DISPLAY */}
+          {/* <div className="flex items-center space-x-2">
             {(() => {
               const priceInfo = formatPriceWithSale(product.retail_price, product.sale_price);
               return (
@@ -127,7 +128,8 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
                 </>
               );
             })()}
-          </div>
+          </div> */}
+          <div /> {/* keep layout spacing */}
           <div className="flex items-center space-x-1">
             {product.keywords.slice(0, 2).map((tag, index) => (
               <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded font-inter">
@@ -206,6 +208,17 @@ export default function CatalogPage() {
   // Use API data if available, otherwise use dummy data
   const allProducts = productsData?.rows || [];
 
+  // Error fallback: show maintenance message if API fails
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (productsData === undefined && !loading) {
+      setHasError(true);
+    } else {
+      setHasError(false);
+    }
+  }, [productsData, loading]);
+
   // Apply client-side filtering for dummy data
   const filteredProducts = allProducts.filter(product => {
     const matchesSearch = !searchTerm || 
@@ -230,37 +243,23 @@ export default function CatalogPage() {
       case 'Featured':
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       case 'Sale Price: Low to High':
-        return parseFloat(a.sale_price || a.retail_price || '0') - parseFloat(b.sale_price || b.retail_price || '0');
+        return (
+          parseFloat(a.sale_price || a.retail_price || '0') -
+          parseFloat(b.sale_price || b.retail_price || '0')
+        );
       case 'Sale Price: High to Low':
-        return parseFloat(b.sale_price || b.retail_price || '0') - parseFloat(a.sale_price || a.retail_price || '0');
-      case 'Retail Price: Low to High':
-        return parseFloat(a.retail_price || '0') - parseFloat(b.retail_price || '0');
-      case 'Retail Price: High to Low':
-        return parseFloat(b.retail_price || '0') - parseFloat(a.retail_price || '0');
-      case 'Rental Price Hourly: Low to High':
-        return parseFloat(a.rental_price_hourly || '0') - parseFloat(b.rental_price_hourly || '0');
-      case 'Rental Price Hourly: High to Low':
-        return parseFloat(b.rental_price_hourly || '0') - parseFloat(a.rental_price_hourly || '0');
-      case 'Rental Price Daily: Low to High':
-        return parseFloat(a.rental_price_daily || '0') - parseFloat(b.rental_price_daily || '0');
-      case 'Rental Price Daily: High to Low':
-        return parseFloat(b.rental_price_daily || '0') - parseFloat(a.rental_price_daily || '0');
-      case 'Rental Price Weekly: Low to High':
-        return parseFloat(a.rental_price_weekly || '0') - parseFloat(b.rental_price_weekly || '0');
-      case 'Rental Price Weekly: High to Low':
-        return parseFloat(b.rental_price_weekly || '0') - parseFloat(a.rental_price_weekly || '0');
-      case 'Rental Price Monthly: Low to High':
-        return parseFloat(a.rental_price_monthly || '0') - parseFloat(b.rental_price_monthly || '0');
-      case 'Rental Price Monthly: High to Low':
-        return parseFloat(b.rental_price_monthly || '0') - parseFloat(a.rental_price_monthly || '0');
-      case 'Rental Price Yearly: Low to High':
-        return parseFloat(a.rental_price_yearly || '0') - parseFloat(b.rental_price_yearly || '0');
-      case 'Rental Price Yearly: High to Low':
-        return parseFloat(b.rental_price_yearly || '0') - parseFloat(a.rental_price_yearly || '0');
+        return (
+          parseFloat(b.sale_price || a.retail_price || '0') -
+          parseFloat(a.sale_price || a.retail_price || '0')
+        );
       case 'Newest':
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+      case 'A-Z':
+        return (a.title || '').localeCompare(b.title || '');
+      case 'Z-A':
+        return (b.title || '').localeCompare(a.title || '');
       default:
-        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+        return 0;
     }
   });
 
@@ -420,6 +419,8 @@ export default function CatalogPage() {
               <option value="Rental Price Yearly: Low to High">Rental Price Yearly: Low to High</option>
               <option value="Rental Price Yearly: High to Low">Rental Price Yearly: High to Low</option>
               <option value="Newest">Newest</option>
+              <option value="A-Z">A-Z</option>
+              <option value="Z-A">Z-A</option>
             </select>
           </div>
         </div>

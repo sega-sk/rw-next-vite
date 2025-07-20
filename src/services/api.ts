@@ -35,54 +35,41 @@ interface Product {
   title: string;
   subtitle?: string;
   description?: string;
-  product_types: string[];
-  movies: string[];
-  genres: string[];
-  keywords: string[];
-  available_rental_periods: RentalPeriod[];
+  price: number;
+  sale_price?: number;
+  retail_price?: number;
   images: string[];
-  background_image_url?: string;
-  is_background_image_activated: boolean;
-  is_trending_model: boolean;
-  sale_price?: string;
-  retail_price?: string;
-  rental_price_hourly?: string;
-  rental_price_daily?: string;
-  rental_price_weekly?: string;
-  rental_price_monthly?: string;
-  rental_price_yearly?: string;
   slug: string;
+  keywords?: string[];
+  product_types?: string[];
+  genres?: string[];
+  movies?: string[];
   video_url?: string;
   created_at?: string;
   updated_at?: string;
-  products?: LinkedItem[];
+  memorabilia_ids?: string[];
+  merchandise_ids?: string[];
+  products?: Product[];
+  memorabilia?: Memorabilia[];
+  merchandise?: Merchandise[];
 }
 
 interface ProductCreate {
   title: string;
-  subtitle: string;
-  description: string;
-  product_types: string[];
-  movies: string[];
-  genres: string[];
-  keywords: string[];
-  available_rental_periods: RentalPeriod[];
-  images: string[];
-  background_image_url: string;
-  is_background_image_activated: boolean;
-  is_trending_model: boolean;
-  is_on_homepage_slider: boolean;
-  sale_price: number;
-  retail_price: number;
-  rental_price_hourly: number;
-  rental_price_daily: number;
-  rental_price_weekly: number;
-  rental_price_monthly: number;
-  rental_price_yearly: number;
-  slug: string;
-  memorabilia_ids: string[];
-  merchandise_ids: string[];
-  product_ids: string[];
+  subtitle?: string;
+  description?: string;
+  price: number;
+  sale_price?: number;
+  retail_price?: number;
+  images?: string[];
+  slug?: string;
+  keywords?: string[];
+  product_types?: string[];
+  genres?: string[];
+  movies?: string[];
+  video_url?: string;
+  memorabilia_ids?: string[];
+  merchandise_ids?: string[];
 }
 
 interface ProductUpdate extends Partial<ProductCreate> {}
@@ -97,7 +84,7 @@ interface Memorabilia {
   slug: string;
   created_at?: string;
   updated_at?: string;
-  products?: LinkedItem[];
+  products?: Product[];
   product_ids?: string[];
 }
 
@@ -119,13 +106,17 @@ interface Merchandise {
   subtitle?: string;
   description?: string;
   price: number;
+  sale_price?: number;
+  retail_price?: number;
   photos: string[];
   keywords: string[];
   slug: string;
   created_at?: string;
   updated_at?: string;
-  products?: LinkedItem[];
+  products?: Product[];
   product_ids?: string[];
+  fabric_measurements?: string;
+  size_options?: string[];
 }
 
 interface MerchandiseCreate {
@@ -133,10 +124,14 @@ interface MerchandiseCreate {
   subtitle?: string;
   description?: string;
   price: number;
+  sale_price?: number;
+  retail_price?: number;
   photos?: string[];
   keywords?: string[];
   product_ids?: string[];
   slug?: string;
+  fabric_measurements?: string;
+  size_options?: string[];
 }
 
 interface MerchandiseUpdate extends Partial<MerchandiseCreate> {}

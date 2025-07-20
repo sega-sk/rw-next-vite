@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { apiService } from '../../services/api';
@@ -17,15 +17,34 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // Use API for search with minimal caching for real-time results
   const { data: searchResults, loading, execute: searchProducts } = useApi(
     () => searchTerm.trim() 
-      ? apiService.searchProducts({ q: searchTerm, limit: 10 })
+      ? apiService.searchProducts({ q: searchTerm, limit: 30 })
       : Promise.resolve({ rows: [], total: 0, offset: 0 }),
     { 
       immediate: false,
-      cacheKey: searchTerm.trim() ? `search-${searchTerm.trim()}` : undefined,
-      cacheTTL: 30 * 1000, // Only 30 seconds for search results
-      staleWhileRevalidate: false // No stale data for search
     }
   );
+
+  // --- Enhanced local filtering for all fields ---
+  const filteredResults = useMemo(() => {
+    if (!searchResults?.rows) return [];
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return searchResults.rows;
+
+    return searchResults.rows.filter((item: any) => {
+      // Product fields
+      const fields = [
+        item.title,
+        item.subtitle,
+        ...(item.keywords || []),
+        ...(item.movies || []),
+        ...(item.product_types || []),
+        ...(item.genres || []),
+      ];
+      return fields.some(field =>
+        typeof field === 'string' && field.toLowerCase().includes(q)
+      );
+    });
+  }, [searchResults, searchTerm]);
 
   useEffect(() => {
     if (searchTerm.trim()) {
@@ -33,15 +52,13 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         searchProducts().catch(() => {
           // Fallback handled by the API service
         });
-      }, 200); // Faster search response
-
+      }, 200);
       return () => clearTimeout(timeoutId);
     }
   }, [searchTerm]);
 
-
   const handleProductClick = (product: any) => {
-    const type = product.product_types[0] || 'vehicle';
+    const type = product.product_types?.[0] || 'vehicle';
     navigate(`/catalog/${type}/${product.slug}`);
     onClose();
   };
@@ -80,7 +97,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" aria-hidden="true" />
               <input
                 type="text"
-                placeholder="Search for vehicles, props, costumes..."
+                placeholder="Search for vehicles, props, costumes, movies, genres, keywords..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 aria-label="Search products"
@@ -97,9 +114,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500 mx-auto mb-2" role="status" aria-label="Searching"></div>
               <p className="text-gray-400 font-inter">Searching...</p>
             </div>
-          ) : !loading && searchResults?.rows?.length > 0 ? (
+          ) : !loading && filteredResults.length > 0 ? (
             <div className="search-modal-results p-4 space-y-3 bg-gray-900" role="list">
-              {searchResults.rows.map((product) => (
+              {filteredResults.map((product) => (
                 <div
                   key={product.id}
                   onClick={() => handleProductClick(product)}
@@ -107,7 +124,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors border border-gray-700 hover:border-gray-600"
                 >
                   <OptimizedImage
-                    src={product.images[0] || '/vdp hero (2).webp'}
+                    src={product.images?.[0] || '/vdp hero (2).webp'}
                     alt={product.title}
                     size="thumbnail"
                     className="w-12 h-12 object-cover rounded-lg"
@@ -117,12 +134,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <p className="text-sm text-gray-400 font-inter">{product.subtitle}</p>
                   </div>
                   <div className="text-sm text-gray-500 font-inter">
-                    {product.product_types.join(', ')}
+                    {(product.product_types || []).join(', ')}
                   </div>
                 </div>
               ))}
             </div>
-          ) : !loading && searchTerm.trim() && searchResults?.rows?.length === 0 ? (
+          ) : !loading && searchTerm.trim() && filteredResults.length === 0 ? (
             <div className="search-modal-results p-8 text-center text-gray-400 bg-gray-900">
               <Search className="h-12 w-12 mx-auto mb-4 text-gray-600" aria-hidden="true" />
               <p className="font-inter">No products found for "{searchTerm}"</p>

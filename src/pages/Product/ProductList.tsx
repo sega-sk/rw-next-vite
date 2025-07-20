@@ -82,7 +82,6 @@ export default function MerchandiseList() {
   };
 
   const handleEdit = (item: Merchandise) => {
-    setSelectedItem(item);
     setFormData({
       title: item.title,
       subtitle: item.subtitle || '',
@@ -97,6 +96,7 @@ export default function MerchandiseList() {
       slug: item.slug || '',
     });
     setShowEditModal(true);
+    console.log('Edit product:', item);
   };
 
   const handleDelete = async (itemId: string) => {
@@ -104,10 +104,16 @@ export default function MerchandiseList() {
       try {
         await deleteMerchandise(itemId);
         success('Product Deleted', 'Product has been deleted successfully!');
+        console.log('Product deleted:', itemId);
         apiService.clearCache?.('product-list-'); // clear cache after delete
         refetchMerchandise();
+        setTimeout(() => {
+          alert('Product deleted!');
+          console.log('Product delete message shown');
+        }, 500);
       } catch (err) {
         error('Delete Failed', 'Failed to delete product.');
+        console.error('Delete product error:', err);
       }
     }
   };
@@ -134,11 +140,13 @@ export default function MerchandiseList() {
 
     if (!isAuthenticated) {
       alert('Please login to save merchandise');
+      console.log('Save failed: not authenticated');
       return;
     }
 
     if (!formData.title.trim() || !formData.price.toString().trim()) {
       alert('Title and price are required.');
+      console.log('Save failed: Title and price required');
       return;
     }
 
@@ -154,6 +162,11 @@ export default function MerchandiseList() {
           },
         });
         success('Product updated!', 'Product updated successfully!');
+        console.log('Product updated:', selectedItem.id);
+        setTimeout(() => {
+          alert('Product updated!');
+          console.log('Product update message shown');
+        }, 500);
       } else {
         await createMerchandise({
           ...formData,
@@ -162,6 +175,11 @@ export default function MerchandiseList() {
             : [],
         });
         success('Product created!', 'Product created successfully!');
+        console.log('Product created:', formData.title);
+        setTimeout(() => {
+          alert('Product created!');
+          console.log('Product create message shown');
+        }, 500);
       }
 
       setFormData({
@@ -181,9 +199,11 @@ export default function MerchandiseList() {
     } catch (err: any) {
       if (err instanceof Error && err.message.includes('Authentication')) {
         alert('Authentication expired. Please login again.');
+        console.log('Save failed: authentication expired');
         window.location.href = '/admin/login';
       } else {
         error('Save Failed', 'Failed to save merchandise. Please try again.');
+        console.error('Save merchandise error:', err);
       }
     }
   };

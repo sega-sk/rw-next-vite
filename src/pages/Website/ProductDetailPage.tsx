@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Heart, ArrowLeft, Expand, X, Grid } from 'lucide-react';
-import { formatPriceWithSale } from '../../utils/priceUtils';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import OptimizedImage from '../../components/UI/OptimizedImage';
 import { apiService } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
 import ContactModal from '../../components/UI/ContactModal';
@@ -10,7 +10,6 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import WebsiteHeader from '../../components/Website/WebsiteHeader';
 import WebsiteFooter from '../../components/Website/WebsiteFooter';
 import SEOHead from '../../components/UI/SEOHead';
-import OptimizedImage from '../../components/UI/OptimizedImage';
 import NotificationBanner from '../../components/UI/NotificationBanner';
 import { useNotification } from '../../hooks/useNotification';
 
@@ -29,10 +28,8 @@ export default function ProductDetailPage() {
   const { data: product, loading } = useApi(
     () => slug ? apiService.getProduct(slug) : Promise.reject('No slug provided'),
     { 
-      immediate: !!slug,
-      cacheKey: `product-${slug}`,
-      cacheTTL: 1 * 60 * 1000,
-      staleWhileRevalidate: true
+      immediate: !!slug
+      // No cacheKey, cacheTTL, or staleWhileRevalidate here!
     }
   );
 
@@ -91,6 +88,17 @@ export default function ProductDetailPage() {
   const handleMerchandiseClick = (item: any) => {
     navigate(`/merchandise/${item.slug || item.id}`);
   };
+
+  // Helper to determine if price should be shown
+  function shouldShowPrice(product) {
+    const price = parseFloat(product.retail_price || product.price || '0');
+    return !isNaN(price) && price >= 1000;
+  }
+
+  // Helper to get product type for navigation
+  function getProductType(product) {
+    return product.product_types?.[0] || 'vehicle';
+  }
 
   if (loading) {
     return (
@@ -176,325 +184,320 @@ export default function ProductDetailPage() {
 
       {/* Product Detail Main */}
       <div className="product-detail-main max-w-7xl mx-auto px-4 md:px-6 pb-12">
-        {/* Main Product Image */}
-        <div className="product-detail-main-slider relative w-full group cursor-zoom-in mb-8 overflow-hidden rounded-xl shadow-2xl" onClick={() => openGallery(currentImageIndex)}>
-          {currentProduct.video_url && currentImageIndex === 0 ? (
-            <div className="relative">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
-                poster={images[0]}
-              >
-                <source src={currentProduct.video_url} type="video/mp4" />
-                <OptimizedImage
-                  src={images[0]} 
-                  alt={currentProduct.title}
-                  size="hero"
-                  className="w-full h-full object-cover"
-                />
-              </video>
-            </div>
-          ) : (
-            <OptimizedImage
-              src={images[currentImageIndex]}
-              alt={currentProduct.title}
-              size="hero"
-              className="no-transform-here w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-          )}
-          
-          {/* Navigation Arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="nav-arrows absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-20 backdrop-blur-sm transform hover:scale-110"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="nav-arrows absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-20 backdrop-blur-sm transform hover:scale-110"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            </>
-          )}
-
-          {/* Gallery Button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); openGallery(currentImageIndex); }}
-            className="gallery-controls absolute top-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-20 backdrop-blur-sm transform hover:scale-110"
-          >
-            <Expand className="h-5 w-5" />
-          </button>
-
-          {/* Image Counter */}
-          <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded text-sm z-20 backdrop-blur-sm">
-            {currentImageIndex + 1} / {images.length}
+        {/* Responsive background image with overlayed title/subtitle */}
+        <div
+          className="relative w-full"
+          style={{
+            // Responsive height for hero section
+            height: '930px',
+            minHeight: '256px',
+            maxHeight: '930px',
+            background: `url('${getBgImage(currentProduct)}') center center / cover no-repeat`,
+            transition: 'background-image 0.3s',
+          }}
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
+          <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
+            <h1 className="text-white font-bebas text-5xl md:text-7xl drop-shadow-lg mb-2">{currentProduct.title}</h1>
+            {currentProduct.subtitle && (
+              <h2 className="text-white font-inter text-xl md:text-2xl font-normal drop-shadow mb-4">{currentProduct.subtitle}</h2>
+            )}
           </div>
-
-          {/* Hover Overlay */}
-          <div className="product-hover-overlay absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
-            <div className="text-white text-lg font-medium backdrop-blur-sm bg-black bg-opacity-30 px-4 py-2 rounded-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
-              Click to view gallery
-            </div>
-          </div>
-          
-          {/* Cinematic border glow effect */}
-          <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500 group-hover:shadow-blue-500/50 group-hover:shadow-2xl transition-all duration-500 rounded-xl pointer-events-none"></div>
         </div>
 
-        {/* Thumbnails Slider and Product Info Row */}
-        <div className="product-main-content grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {/* Left Column: Thumbnails Slider */}
-          <div className="lg:col-span-2">
-            <ThumbnailSlider 
+        {/* Main product image below title/subtitle */}
+        <div className="w-full flex justify-center bg-white py-6">
+          <div className="relative rounded-lg overflow-hidden shadow-lg" style={{ maxWidth: 600, width: '100%' }}>
+            <OptimizedImage
+              src={images[0]}
+              alt={currentProduct.title}
+              size="main"
+              className="w-full h-auto object-cover cursor-pointer"
+              onClick={() => openGallery(0)}
+            />
+          </div>
+        </div>
+
+        {/* Thumbnails slider */}
+        <div className="flex justify-center">
+          <div style={{ maxWidth: 600, width: '100%' }}>
+            <ThumbnailSlider
               images={images}
-              currentImageIndex={currentImageIndex}
-              onImageSelect={setCurrentImageIndex}
+              currentImageIndex={galleryIndex}
+              onImageSelect={openGallery}
               productTitle={currentProduct.title}
             />
           </div>
+        </div>
 
-          {/* Right Column: Product Title and Price */}
-          <div className="lg:col-span-1">
-            <h1 className="text-3xl md:text-4xl font-bebas text-gray-900 mb-2 leading-tight">
-              {currentProduct.title}
-            </h1>
-            <p className="text-lg text-gray-600 mb-6 font-inter">{currentProduct.subtitle}</p>
-
-            <div className="flex justify-end">
-              <div className="price-container mb-6">
-                {priceInfo.isCallForPrice ? (
-                  <div className="call-for-price">Call for Price</div>
-                ) : (
-                  <div className="flex flex-col space-y-2">
-                    <span className={`text-3xl font-bold ${priceInfo.isOnSale ? 'text-red-600' : 'text-gray-900'} font-inter`}>
-                      {priceInfo.displayPrice}
-                    </span>
-                    {priceInfo.originalPrice && (
-                      <span className="text-xl text-gray-500 line-through font-inter">
-                        {priceInfo.originalPrice}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-  
-              <div className="flex flex-col space-y-3 items-end">
-                <button
-                  onClick={() => setShowContactModal(true)}
-                  className="bg-gray-900 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-800 transition-colors font-inter"
-                >
-                  Get in Touch
-                </button>
-                <button
-                  onClick={() => toggleFavorite(currentProduct.id)}
-                  className={`flex items-center justify-center px-8 py-4 rounded-lg border-2 transition-colors font-inter ${
-                    isFavorite(currentProduct.id)
-                      ? 'border-red-500 text-red-500 bg-red-50'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }`}
-                >
-                  <Heart className={`h-5 w-5 mr-2 ${isFavorite(currentProduct.id) ? 'fill-current' : ''}`} />
-                  {isFavorite(currentProduct.id) ? 'Remove from Favorites' : 'Add to Favorites'}
-                </button>
-              </div>
+        {/* Gallery Modal */}
+        {showGallery && (
+          <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">
+            <button
+              className="absolute top-6 right-6 text-white text-3xl z-50"
+              onClick={() => setShowGallery(false)}
+              aria-label="Close gallery"
+            >
+              <X />
+            </button>
+            <button
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-white text-3xl z-50"
+              onClick={prevGallery}
+              aria-label="Previous image"
+            >
+              <ChevronLeft />
+            </button>
+            <div className="relative max-w-3xl w-full flex flex-col items-center">
+              <OptimizedImage
+                src={images[galleryIndex]}
+                alt={`${currentProduct.title} ${galleryIndex + 1}`}
+                size="gallery"
+                className="w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              />
+              <div className="mt-4 text-white text-sm">{galleryIndex + 1} / {images.length}</div>
             </div>
-          </div>
-
-        {/* Product Description and Keywords */}
-        {(currentProduct.description || currentProduct.keywords?.length > 0) && (
-          <div className="mb-16-none">
-            {currentProduct.description && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">Description</h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {/* Product Types */}
-                  {currentProduct.product_types?.map((type: string, idx: number) => (
-                    <span
-                      key={`ptype-${type}-${idx}`}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-inter"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                  {/* Genres */}
-                  {currentProduct.genres?.map((genre: string, idx: number) => (
-                    <span
-                      key={`genre-${genre}-${idx}`}
-                      className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-inter"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                  {/* Movies */}
-                  {currentProduct.movies?.map((movie: string, idx: number) => (
-                    <span
-                      key={`movie-${movie}-${idx}`}
-                      className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-inter"
-                    >
-                      {movie}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-gray-700 leading-relaxed font-inter text-lg">{currentProduct.description}</p>
-              </div>
-            )}
-
-            {/* Keywords */}
-            {currentProduct.keywords?.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {currentProduct.keywords.map((keyword, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-600 text-sm rounded-full font-inter">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <button
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-white text-3xl z-50"
+              onClick={nextGallery}
+              aria-label="Next image"
+            >
+              <ChevronRight />
+            </button>
           </div>
         )}
+      </div>
 
-        {/* Memorabilia and Merchandise Row Layout */}
-        <div className="memorabilia-merchandise-row mt-16 w-full">
+      {/* Thumbnails Slider and Product Info Row */}
+      <div className="product-main-content grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        {/* Left Column: Thumbnails Slider */}
+        <div className="lg:col-span-2">
+          <ThumbnailSlider 
+            images={images}
+            currentImageIndex={currentImageIndex}
+            onImageSelect={setCurrentImageIndex}
+            productTitle={currentProduct.title}
+          />
+        </div>
 
-          {/* Merchandise Section */}
-          {merchandiseItems.length > 0 && (
+        {/* Right Column: Product Title and Price */}
+        <div className="lg:col-span-1">
+          <h1 className="text-3xl md:text-4xl font-bebas text-gray-900 mb-2 leading-tight">
+            {currentProduct.title}
+          </h1>
+          <p className="text-lg text-gray-600 mb-6 font-inter">{currentProduct.subtitle}</p>
+
+          <div className="flex justify-end">
+            <div className="price-container mb-6">
+              {shouldShowPrice(currentProduct) && (
+                <div className="flex flex-col space-y-2">
+                  <span className={`text-3xl font-bold ${priceInfo.isOnSale ? 'text-red-600' : 'text-gray-900'} font-inter`}>
+                    {priceInfo.displayPrice}
+                  </span>
+                  {priceInfo.originalPrice && (
+                    <span className="text-xl text-gray-500 line-through font-inter">
+                      {priceInfo.originalPrice}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+    
+            <div className="flex flex-col space-y-3 items-end">
+              <button
+                onClick={() => setShowContactModal(true)}
+                className="bg-gray-900 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-800 transition-colors font-inter"
+              >
+                Get in Touch
+              </button>
+              <button
+                onClick={() => toggleFavorite(currentProduct.id)}
+                className={`flex items-center justify-center px-8 py-4 rounded-lg border-2 transition-colors font-inter ${
+                  isFavorite(currentProduct.id)
+                    ? 'border-red-500 text-red-500 bg-red-50'
+                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }`}
+              >
+                <Heart className={`h-5 w-5 mr-2 ${isFavorite(currentProduct.id) ? 'fill-current' : ''}`} />
+                {isFavorite(currentProduct.id) ? 'Remove from Favorites' : 'Add to Favorites'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      {/* Product Description and Keywords */}
+      {(currentProduct.description || currentProduct.keywords?.length > 0) && (
+        <div className="mb-16-none">
+          {/* Product Types and Genres as tags above description */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {currentProduct.product_types?.map((type: string, idx: number) => (
+              <span
+                key={`ptype-${type}-${idx}`}
+                className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-inter"
+              >
+                {type}
+              </span>
+            ))}
+            {currentProduct.genres?.map((genre: string, idx: number) => (
+              <span
+                key={`genre-${genre}-${idx}`}
+                className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-inter"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
+          {/* Movies as heading, comma separated */}
+          {currentProduct.movies?.length > 0 && (
+            <h3 className="text-lg font-semibold text-purple-700 mb-2 font-inter">
+              {currentProduct.movies.join(', ')}
+            </h3>
+          )}
+          {currentProduct.description && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">Description</h3>
+              <p className="text-gray-700 leading-relaxed font-inter text-lg">{currentProduct.description}</p>
+            </div>
+          )}
+          {/* Keywords */}
+          {currentProduct.keywords?.length > 0 && (
             <div>
-              <div className="product-merchandise-wrapper flex items-center justify-between mb-8">
-                <h2 className="text-2xl md:text-3xl font-bebas text-gray-900">Merchandise</h2>
-                <button
-                  onClick={() => navigate(`/merchandise`)}
-                  className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
-                >
-                  View All →
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {merchandiseItems.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-                    onClick={() => handleMerchandiseClick(item)}
-                  >
-                    <div className="relative overflow-hidden">
-                      {item.photos?.[0] ? (
-                        <OptimizedImage
-                          src={item.photos[0]}
-                          alt={item.title}
-                          size="card"
-                          className="no-transform-here w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-gray-900 flex items-center justify-center">
-                          <span className="text-white text-lg font-bold">T-SHIRT</span>
-                        </div>
-                      )}
-                      <div className="hidden absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-                        MERCHANDISE
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-gray-900 mb-1 font-inter">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2 font-inter">{item.subtitle}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-gray-900 font-inter">${item.price}</span>
-                        <div className="flex flex-wrap gap-1 justify-end">
-                          {item.keywords?.slice(0, 2).map((keyword, index) => (
-                            <span key={index} className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded font-inter">
-                              {keyword}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {currentProduct.keywords.map((keyword, index) => (
+                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-600 text-sm rounded-full font-inter">
+                    {keyword}
+                  </span>
                 ))}
               </div>
             </div>
           )}
-          
-          {/* Memorabilia Section */}
-          {memorabiliaItems.length > 0 && (
-            <div className="product-memorabilia-wrapper mb-16 lg:mb-0">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl md:text-3xl font-bebas text-gray-900">Movie Memorabilia</h2>
+        </div>
+      )}
+
+      {/* Memorabilia and Merchandise Row Layout */}
+      <div className="memorabilia-merchandise-row mt-16 w-full">
+
+        {/* Merchandise Section */}
+        {merchandiseItems.length > 0 && (
+          <div>
+            <div className="product-merchandise-wrapper flex items-center justify-between mb-8">
+              <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 flex items-center">
+                Merchandise
                 <button
-                  onClick={() => navigate(`/memorabilia`)}
-                  className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
+                  className="ml-3 px-2 py-1 rounded bg-green-600 text-white text-xs"
+                  onClick={() => navigate('/admin/merchandise/add')}
+                  title="Add new Merchandise"
+                  type="button"
                 >
-                  View All →
+                  +
                 </button>
-              </div>
-              <div className="flex flex-col">
-                {memorabiliaItems.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group flex"
-                    onClick={() => handleMemorabiliaClick(item)}
-                  >
-                    <div className="relative overflow-hidden">
+              </h2>
+              <button
+                onClick={() => navigate(`/${currentProduct.slug}/merchandise`)}
+                className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
+              >
+                View All →
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {merchandiseItems.slice(0, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                  onClick={() => handleMerchandiseClick(item)}
+                >
+                  <div className="relative overflow-hidden">
+                    {item.photos?.[0] ? (
                       <OptimizedImage
-                        src={item.photos?.[0] || '/memorabilia_balanced.webp'}
+                        src={item.photos[0]}
                         alt={item.title}
                         size="card"
                         className="no-transform-here w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="hidden absolute top-4 left-4 bg-purple-500 text-white px-2 py-1 rounded text-xs font-medium">
-                        MEMORABILIA
+                    ) : (
+                      <div className="w-full h-48 bg-gray-900 flex items-center justify-center">
+                        <span className="text-white text-lg font-bold">T-SHIRT</span>
                       </div>
+                    )}
+                    <div className="hidden absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      MERCHANDISE
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-gray-900 mb-1 font-inter">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mb-3 font-inter">{item.subtitle}</p>
-                      <div className="flex flex-wrap gap-1">
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-medium text-gray-900 mb-1 font-inter">{item.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2 font-inter">{item.subtitle}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-gray-900 font-inter">${item.price}</span>
+                      <div className="flex flex-wrap gap-1 justify-end">
                         {item.keywords?.slice(0, 2).map((keyword, index) => (
-                          <span key={index} className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded font-inter">
+                          <span key={index} className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded font-inter">
                             {keyword}
                           </span>
                         ))}
-                        {item.keywords && item.keywords.length > 2 && (
-                          <span className="text-xs text-gray-500 font-inter">
-                            +{item.keywords.length - 2}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-
-        </div>
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-16 w-full">
-            <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 mb-8">You Might be Interested</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
-                <div
-                  key={relatedProduct.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => handleRelatedProductClick(relatedProduct)}
+          </div>
+        )}
+        
+        {/* Memorabilia Section */}
+        {memorabiliaItems.length > 0 && (
+          <div className="product-memorabilia-wrapper mb-16 lg:mb-0">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 flex items-center">
+                Movie Memorabilia
+                <button
+                  className="ml-3 px-2 py-1 rounded bg-purple-600 text-white text-xs"
+                  onClick={() => navigate('/admin/memorabilia/add')}
+                  title="Add new Memorabilia"
+                  type="button"
                 >
-                  <OptimizedImage
-                    src={relatedProduct.images?.[0] || '/vdp hero (2).webp'}
-                    alt={relatedProduct.title}
-                    size="card"
-                    className="w-full h-48 object-cover"
-                  />
+                  +
+                </button>
+              </h2>
+              <button
+                onClick={() => navigate(`/${currentProduct.slug}/memorabilia`)}
+                className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
+              >
+                View All →
+              </button>
+            </div>
+            <div className="flex flex-col">
+              {memorabiliaItems.slice(0, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group flex"
+                  onClick={() => handleMemorabiliaClick(item)}
+                >
+                  <div className="relative overflow-hidden">
+                    <OptimizedImage
+                      src={item.photos?.[0] || '/memorabilia_balanced.webp'}
+                      alt={item.title}
+                      size="card"
+                      className="no-transform-here w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="hidden absolute top-4 left-4 bg-purple-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      MEMORABILIA
+                    </div>
+                  </div>
                   <div className="p-4">
-                    <h3 className="font-medium text-gray-900 mb-1 font-inter">{relatedProduct.title}</h3>
-                    <p className="text-sm text-gray-600 font-inter">{relatedProduct.subtitle}</p>
+                    <h3 className="font-medium text-gray-900 mb-1 font-inter">{item.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3 font-inter">{item.subtitle}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {item.keywords?.slice(0, 2).map((keyword, index) => (
+                        <span key={index} className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded font-inter">
+                          {keyword}
+                        </span>
+                      ))}
+                      {item.keywords && item.keywords.length > 2 && (
+                        <span className="text-xs text-gray-500 font-inter">
+                          +{item.keywords.length - 2}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -502,77 +505,35 @@ export default function ProductDetailPage() {
           </div>
         )}
 
-        </div>
-        
       </div>
 
-      {/* Gallery Modal */}
-      {showGallery && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <div className="relative w-full h-full flex items-center justify-center p-4">
-            {/* Close Button */}
-            <button
-              onClick={() => setShowGallery(false)}
-              className="absolute top-4 right-4 bg-white bg-opacity-20 text-white p-2 rounded-full hover:bg-opacity-30 transition-all z-10"
-            >
-              <X className="h-6 w-6" />
-            </button>
-
-            {/* Main Image */}
-            <div className="relative max-h-full">
-              <OptimizedImage 
-                src={images[galleryIndex]} 
-                alt={`${currentProduct.title} ${galleryIndex + 1}`}
-                size="fullscreen"
-                className="max-w-full max-h-full object-contain"
-              />
-              
-              {/* Navigation Arrows */}
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setGalleryIndex((prev) => (prev - 1 + images.length) % images.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-20 text-white p-3 rounded-full hover:bg-opacity-30 transition-all"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-                  <button
-                    onClick={() => setGalleryIndex((prev) => (prev + 1) % images.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-20 text-white p-3 rounded-full hover:bg-opacity-30 transition-all"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Thumbnail Strip */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-black bg-opacity-50 p-2 rounded-lg">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setGalleryIndex(index)}
-                  className={`w-16 h-16 rounded overflow-hidden border-2 transition-all ${
-                    index === galleryIndex ? 'border-white' : 'border-transparent opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <OptimizedImage 
-                    src={image} 
-                    alt={`Thumbnail ${index + 1}`}
-                    size="thumbnail"
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Image Counter */}
-            <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-              {galleryIndex + 1} / {images.length}
-            </div>
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-16 w-full">
+          <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 mb-8">You Might be Interested</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((relatedProduct) => (
+              <div
+                key={relatedProduct.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/catalog/${getProductType(relatedProduct)}/${relatedProduct.slug}`)}
+              >
+                <OptimizedImage
+                  src={relatedProduct.images?.[0] || '/vdp hero (2).webp'}
+                  alt={relatedProduct.title}
+                  size="card"
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-900 mb-1 font-inter">{relatedProduct.title}</h3>
+                  <p className="text-sm text-gray-600 font-inter">{relatedProduct.subtitle}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
+
       {/* Notification Banner */}
       {notification && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md">
@@ -698,4 +659,31 @@ function ThumbnailSlider({ images, currentImageIndex, onImageSelect, productTitl
       </div>
     </div>
   );
+}
+
+function getBgImage(product) {
+  // Use product-specific background if activated
+  if (product?.is_background_image_activated) {
+    if (
+      window.innerWidth <= 600 &&
+      product.background_image_url_mobile &&
+      product.is_background_image_mobile_activated
+    )
+      return product.background_image_url_mobile;
+    if (
+      window.innerWidth <= 1024 &&
+      product.background_image_url_tablet &&
+      product.is_background_image_tablet_activated
+    )
+      return product.background_image_url_tablet;
+    return product.background_image_url;
+  }
+  // Default backgrounds (public folder)
+  if (window.innerWidth <= 428) {
+    return '/product-hero-bg-mobile.webp';
+  }
+  if (window.innerWidth <= 768) {
+    return '/product-hero-bg-tablet.webp';
+  }
+  return '/product-hero-bg.webp';
 }
