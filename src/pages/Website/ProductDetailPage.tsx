@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ArrowLeft, Heart } from 'lucide-react';
 import OptimizedImage from '../../components/UI/OptimizedImage';
 import { apiService } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
