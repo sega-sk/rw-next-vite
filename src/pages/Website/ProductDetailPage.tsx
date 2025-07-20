@@ -29,8 +29,8 @@ export default function ProductDetailPage() {
   const { data: product, loading } = useApi(
     () => slug ? apiService.getProduct(slug) : Promise.reject('No slug provided'),
     { 
-      immediate: !!slug
-      // No cacheKey, cacheTTL, or staleWhileRevalidate here!
+      immediate: !!slug,
+      skipCache: true // Remove caching for debugging
     }
   );
 
@@ -69,6 +69,15 @@ export default function ProductDetailPage() {
   const openGallery = (index: number) => {
     setGalleryIndex(index);
     setShowGallery(true);
+  };
+
+  // Add missing gallery navigation functions
+  const nextGallery = () => {
+    setGalleryIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevGallery = () => {
+    setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   // Ensure component updates on slug change (force remount)
@@ -228,41 +237,28 @@ export default function ProductDetailPage() {
             height: '930px',
             minHeight: '256px',
             maxHeight: '930px',
-            background: `url('${getBgImage(currentProduct)}') center center / cover no-repeat`,
+            background: `#000000url('${getBgImage(currentProduct)}') center center / cover no-repeat`,
             transition: 'background-image 0.3s',
           }}
         >
-          <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
+          <div className="absolute inset-0 bg-black bg-opacity-40 z-10 hidden" />
           <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
             <h1 className="text-white font-bebas text-5xl md:text-7xl drop-shadow-lg mb-2">{currentProduct.title}</h1>
             {currentProduct.subtitle && (
               <h2 className="text-white font-inter text-xl md:text-2xl font-normal drop-shadow mb-4">{currentProduct.subtitle}</h2>
             )}
-          </div>
-        </div>
-
-        {/* Main product image below title/subtitle */}
-        <div className="w-full flex justify-center bg-white py-6">
-          <div className="relative rounded-lg overflow-hidden shadow-lg" style={{ maxWidth: 600, width: '100%' }}>
-            <OptimizedImage
-              src={images[0]}
-              alt={currentProduct.title}
-              size="main"
-              className="w-full h-auto object-cover cursor-pointer"
-              onClick={() => openGallery(0)}
-            />
-          </div>
-        </div>
-
-        {/* Thumbnails slider */}
-        <div className="flex justify-center">
-          <div style={{ maxWidth: 600, width: '100%' }}>
-            <ThumbnailSlider
-              images={images}
-              currentImageIndex={galleryIndex}
-              onImageSelect={openGallery}
-              productTitle={currentProduct.title}
-            />
+            {/* Main product image below title/subtitle */}
+            <div className="w-full flex justify-center bg-white py-6">
+              <div className="relative rounded-lg overflow-hidden shadow-lg" style={{ maxWidth: 600, width: '100%' }}>
+                <OptimizedImage
+                  src={images[0]}
+                  alt={currentProduct.title}
+                  size="main"
+                  className="w-full h-auto object-cover cursor-pointer"
+                  onClick={() => openGallery(0)}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -304,6 +300,8 @@ export default function ProductDetailPage() {
       </div>
       {/* End Product Detail Main */}
 
+  <div className="w-full product-page-content-wrapper">
+
       {/* Thumbnails Slider and Product Info Row */}
       <div className="product-main-content grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
         {/* Left Column: Thumbnails Slider */}
@@ -312,17 +310,13 @@ export default function ProductDetailPage() {
             images={images}
             currentImageIndex={currentImageIndex}
             onImageSelect={setCurrentImageIndex}
+            onImageClick={openGallery}
             productTitle={currentProduct.title}
           />
         </div>
 
         {/* Right Column: Product Title and Price */}
         <div className="lg:col-span-1">
-          <h1 className="text-3xl md:text-4xl font-bebas text-gray-900 mb-2 leading-tight">
-            {currentProduct.title}
-          </h1>
-          <p className="text-lg text-gray-600 mb-6 font-inter">{currentProduct.subtitle}</p>
-
           <div className="flex justify-end">
             <div className="price-container mb-6">
               {shouldShowPrice(currentProduct) && (
@@ -339,7 +333,7 @@ export default function ProductDetailPage() {
               )}
             </div>
     
-            <div className="flex flex-col space-y-3 items-end">
+            <div className="flex flex-col space-y-3 items-end product-big-cta">
               <button
                 onClick={() => setShowContactModal(true)}
                 className="bg-gray-900 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-800 transition-colors font-inter"
@@ -386,12 +380,12 @@ export default function ProductDetailPage() {
           {/* Movies as heading, comma separated */}
           {currentProduct.movies?.length > 0 && (
             <h3 className="text-lg font-semibold text-purple-700 mb-2 font-inter">
-              {currentProduct.movies.join(', ')}
+              Movie: {currentProduct.movies.join(', ')}
             </h3>
           )}
           {currentProduct.description && (
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">Description</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 font-inter">{currentProduct.description_title ? currentProduct.description_title : 'Description'}</h3>
               <p className="text-gray-700 leading-relaxed font-inter text-lg">{currentProduct.description}</p>
             </div>
           )}
@@ -544,9 +538,11 @@ export default function ProductDetailPage() {
 
       </div>
 
-      {/* Related Products */}
+  </div>
+
+  {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <div className="mt-16 w-full">
+        <div className="mt-16 w-full related-products-wrapper">
           <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 mb-8">You Might be Interested</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedProducts.map((relatedProduct) => (
@@ -604,10 +600,25 @@ export default function ProductDetailPage() {
 }
 
 // Thumbnail Slider Component
-function ThumbnailSlider({ images, currentImageIndex, onImageSelect, productTitle }) {
+// Thumbnail Slider Component - Fix TypeScript types and add gallery click
+interface ThumbnailSliderProps {
+  images: string[];
+  currentImageIndex: number;
+  onImageSelect: (index: number) => void;
+  onImageClick: (index: number) => void;
+  productTitle: string;
+}
+
+function ThumbnailSlider({ 
+  images, 
+  currentImageIndex, 
+  onImageSelect, 
+  onImageClick,
+  productTitle 
+}: ThumbnailSliderProps) {
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const visibleCount = 4; // Show 6 thumbnails at a time
+  const visibleCount = 4; // Show 4 thumbnails at a time
   
   const canScrollLeft = startIndex > 0;
   const canScrollRight = startIndex + visibleCount < images.length;
@@ -658,22 +669,34 @@ function ThumbnailSlider({ images, currentImageIndex, onImageSelect, productTitl
           {visibleImages.map((image, index) => {
             const actualIndex = startIndex + index;
             return (
-              <button
-                key={actualIndex}
-                onClick={() => onImageSelect(actualIndex)}
-                className={`thumbnail-slider-item flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                  actualIndex === currentImageIndex 
-                    ? 'border-blue-500 ring-2 ring-blue-200 scale-110 shadow-lg' 
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                }`}
-              >
-                <OptimizedImage
-                  src={image}
-                  alt={`${productTitle} ${actualIndex + 1}`}
-                  size="thumbnail"
-                  className="w-full h-full object-cover transition-transform duration-300"
-                />
-              </button>
+              <div key={actualIndex} className="relative">
+                <button
+                  onClick={() => onImageSelect(actualIndex)}
+                  className={`thumbnail-slider-item flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                    actualIndex === currentImageIndex 
+                      ? 'border-blue-500 ring-2 ring-blue-200 scale-110 shadow-lg' 
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  }`}
+                  title="Click to select, double-click to open gallery"
+                >
+                  <OptimizedImage
+                    src={image}
+                    alt={`${productTitle} ${actualIndex + 1}`}
+                    size="thumbnail"
+                    className="w-full h-full object-cover transition-transform duration-300"
+                  />
+                </button>
+                {/* Gallery open button overlay */}
+                <button
+                  onClick={() => onImageClick(actualIndex)}
+                  className="open-gallery absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black bg-opacity-50 rounded-lg transition-opacity duration-200"
+                  title="Open gallery"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </button>
+              </div>
             );
           })}
         </div>
@@ -692,22 +715,24 @@ function ThumbnailSlider({ images, currentImageIndex, onImageSelect, productTitl
       
       {/* Image Counter */}
       <div className="text-center mt-3 text-sm text-gray-500 font-inter transition-opacity duration-300">
-        {currentImageIndex + 1} of {images.length} images
+        {currentImageIndex + 1} of {images.length} images • Click thumbnail to select, hover for gallery
       </div>
     </div>
   );
 }
 
-function getBgImage(product) {
+function getBgImage(product: any): string {
   // Use product-specific background if activated
   if (product?.is_background_image_activated) {
     if (
+      typeof window !== 'undefined' &&
       window.innerWidth <= 600 &&
       product.background_image_url_mobile &&
       product.is_background_image_mobile_activated
     )
       return product.background_image_url_mobile;
     if (
+      typeof window !== 'undefined' &&
       window.innerWidth <= 1024 &&
       product.background_image_url_tablet &&
       product.is_background_image_tablet_activated
@@ -716,11 +741,13 @@ function getBgImage(product) {
     return product.background_image_url;
   }
   // Default backgrounds (public folder)
-  if (window.innerWidth <= 428) {
-    return '/reel_wheels_background_m.webp';
-  }
-  if (window.innerWidth <= 768) {
-    return '/reel_wheels_background_t.webp';
+  if (typeof window !== 'undefined') {
+    if (window.innerWidth <= 428) {
+      return '/reel_wheels_background_m.webp';
+    }
+    if (window.innerWidth <= 768) {
+      return '/reel_wheels_background_t.webp';
+    }
   }
   return '/reel_wheels_background_d.webp';
 }

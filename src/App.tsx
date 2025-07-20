@@ -30,6 +30,8 @@ import UsersList from './pages/Users/UsersList';
 import AddMemorabilia from './pages/Memorabilia/AddMemorabilia';
 import AddMerchandise from './pages/Merchandise/AddMerchandise';
 import AddUser from './pages/Users/AddUser';
+import EditMemorabilia from './pages/Memorabilia/EditMemorabilia';
+import EditMerchandise from './pages/Merchandise/EditMerchandise';
 
 // Main website components
 import Homepage from './pages/Website/Homepage';

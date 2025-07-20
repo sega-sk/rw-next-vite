@@ -115,6 +115,7 @@ export default function AddProduct() {
   const [formData, setFormData] = useState<ProductCreate>({
     title: '',
     subtitle: '',
+    description_title: '', // Add description_title field
     description: '',
     product_types: [],
     movies: [],
@@ -173,6 +174,7 @@ export default function AddProduct() {
       setFormData({
         title: editProduct.title || '',
         subtitle: editProduct.subtitle || '',
+        description_title: editProduct.description_title || '', // Add description_title
         description: editProduct.description || '',
         product_types: editProduct.product_types || [],
         movies: editProduct.movies || [],
@@ -207,9 +209,9 @@ export default function AddProduct() {
     }
   }, [isEditing, editProduct]);
 
-  // API hooks
+  // API hooks - Fix the product loading issue
   const { data: memorabiliaData } = useApi(
-    () => apiService.getMemorabilia({ limit: 20 }),
+    () => apiService.getMemorabilia({ limit: 100 }),
     { 
       immediate: true,
       cacheKey: 'add-product-memorabilia',
@@ -219,7 +221,7 @@ export default function AddProduct() {
   );
 
   const { data: merchandiseData } = useApi(
-    () => apiService.getMerchandise({ limit: 20 }),
+    () => apiService.getMerchandise({ limit: 100 }),
     { 
       immediate: true,
       cacheKey: 'add-product-merchandise',
@@ -230,7 +232,12 @@ export default function AddProduct() {
 
   const { data: allProductsData } = useApi(
     () => apiService.getProducts({ limit: 100 }),
-    { immediate: true, cacheKey: 'add-product-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+    { 
+      immediate: true, 
+      cacheKey: 'add-product-all-products', 
+      cacheTTL: 1 * 60 * 1000, 
+      staleWhileRevalidate: true 
+    }
   );
 
   const { mutate: createProduct, loading: creating } = useMutation(
@@ -413,6 +420,33 @@ export default function AddProduct() {
     }
   };
 
+  // Add error boundary for the component
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    try {
+      // Component initialization
+      setHasError(false);
+    } catch (err) {
+      console.error('AddProduct component error:', err);
+      setHasError(true);
+    }
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Form</h1>
+          <p className="text-gray-600 mb-4">There was an error loading the product form.</p>
+          <Button onClick={() => navigate('/admin/product-list')}>
+            Back to Product List
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Defensive: do not render form until editProduct is loaded in edit mode
   if (isEditing && loadingProduct) {
     return (
@@ -466,6 +500,16 @@ export default function AddProduct() {
                     value={formData.subtitle || ''}
                     onChange={handleInputChange}
                     placeholder="Enter subtitle"
+                  />
+                </FormField>
+
+                {/* Add Description Title field */}
+                <FormField label="Description Title">
+                  <Input
+                    name="description_title"
+                    value={formData.description_title || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter description title (optional)"
                   />
                 </FormField>
 
@@ -818,38 +862,42 @@ export default function AddProduct() {
                 </button>
               </div>
               <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
-                {(memorabiliaData?.rows || []).map((item) => (
-                  <div key={item.id} className="flex items-center space-x-3 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.memorabilia_ids?.includes(item.id) || false}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFormData(prev => ({
-                          ...prev,
-                          memorabilia_ids: checked 
-                            ? [...(prev.memorabilia_ids || []), item.id]
-                            : (prev.memorabilia_ids || []).filter(id => id !== item.id)
-                        }));
-                      }}
-                      className="rounded text-blue-600"
-                    />
-                    <OptimizedImage
-                      src={item.photos[0] || 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=2'} 
-                      alt={item.title}
-                      size="thumbnail"
-                      className="w-10 h-10 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                {memorabiliaData?.rows?.length > 0 ? (
+                  memorabiliaData.rows.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 mb-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.memorabilia_ids?.includes(item.id) || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFormData(prev => ({
+                            ...prev,
+                            memorabilia_ids: checked 
+                              ? [...(prev.memorabilia_ids || []), item.id]
+                              : (prev.memorabilia_ids || []).filter(id => id !== item.id)
+                          }));
+                        }}
+                        className="rounded text-blue-600"
+                      />
+                      <OptimizedImage
+                        src={item.photos?.[0] || '/memorabilia_balanced.webp'} 
+                        alt={item.title}
+                        size="thumbnail"
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">No memorabilia items found</p>
+                )}
               </div>
             </div>
 
-            {/* Merchandise */}
+            {/* Connected Merchandise */}
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Connected Merchandise</h3>
@@ -862,38 +910,42 @@ export default function AddProduct() {
                 </button>
               </div>
               <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
-                {(merchandiseData?.rows || []).map((item) => (
-                  <div key={item.id} className="flex items-center space-x-3 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.merchandise_ids?.includes(item.id) || false}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFormData(prev => ({
-                          ...prev,
-                          merchandise_ids: checked 
-                            ? [...(prev.merchandise_ids || []), item.id]
-                            : (prev.merchandise_ids || []).filter(id => id !== item.id)
-                        }));
-                      }}
-                      className="rounded text-blue-600"
-                    />
-                    <OptimizedImage
-                      src={item.photos[0] || 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=2'} 
-                      alt={item.title}
-                      size="thumbnail"
-                      className="w-10 h-10 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                {merchandiseData?.rows?.length > 0 ? (
+                  merchandiseData.rows.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 mb-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.merchandise_ids?.includes(item.id) || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFormData(prev => ({
+                            ...prev,
+                            merchandise_ids: checked 
+                              ? [...(prev.merchandise_ids || []), item.id]
+                              : (prev.merchandise_ids || []).filter(id => id !== item.id)
+                          }));
+                        }}
+                        className="rounded text-blue-600"
+                      />
+                      <OptimizedImage
+                        src={item.photos?.[0] || '/Back To The Future 35th Anniversary-mobile.webp'} 
+                        alt={item.title}
+                        size="thumbnail"
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">No merchandise items found</p>
+                )}
               </div>
             </div>
 
-            {/* Related Products */}
+            {/* Related Products - Fix empty display */}
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Related Products</h3>
@@ -906,35 +958,65 @@ export default function AddProduct() {
                 </button>
               </div>
               <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
-                {(allProductsData?.rows || []).filter(p => p.id !== editProductId).map((item) => (
-                  <div key={item.id} className="flex items-center space-x-3 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.product_ids?.includes(item.id) || false}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFormData(prev => ({
-                          ...prev,
-                          product_ids: checked 
-                            ? [...(prev.product_ids || []), item.id]
-                            : (prev.product_ids || []).filter(id => id !== item.id)
-                        }));
-                      }}
-                      className="rounded text-blue-600"
-                    />
-                    <OptimizedImage
-                      src={item.images?.[0] || 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=2'} 
-                      alt={item.title}
-                      size="thumbnail"
-                      className="w-10 h-10 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
-                    </div>
+                {allProductsData?.rows?.length > 0 ? (
+                  allProductsData.rows
+                    .filter(p => p.id !== editProductId) // Don't show current product in related
+                    .map((item) => (
+                      <div key={item.id} className="flex items-center space-x-3 mb-3 p-2 hover:bg-gray-50 rounded">
+                        <input
+                          type="checkbox"
+                          checked={formData.product_ids?.includes(item.id) || false}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setFormData(prev => ({
+                              ...prev,
+                              product_ids: checked 
+                                ? [...(prev.product_ids || []), item.id]
+                                : (prev.product_ids || []).filter(id => id !== item.id)
+                            }));
+                          }}
+                          className="rounded text-blue-600"
+                        />
+                        <OptimizedImage
+                          src={item.images?.[0] || '/vdp hero (2).webp'} 
+                          alt={item.title}
+                          size="thumbnail"
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                          <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                          {item.product_types?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {item.product_types.slice(0, 2).map((type, idx) => (
+                                <span key={idx} className="px-1 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">
+                                  {type}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500 mb-2">No products found</p>
+                    <button 
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      Refresh
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
+              {/* Show selected count */}
+              {formData.product_ids?.length > 0 && (
+                <div className="mt-2 text-sm text-gray-600">
+                  {formData.product_ids.length} product{formData.product_ids.length !== 1 ? 's' : ''} selected
+                </div>
+              )}
             </div>
 
             {/* --- Add checkboxes for homepage/trending --- */}

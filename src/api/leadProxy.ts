@@ -6,25 +6,36 @@ export default async function leadProxy(req: Request, res: Response) {
     return;
   }
 
-  // Use Vercel env variable IMPORTANT_F_F_K for the API key
+  // Use Vercel env variable for the API key (never exposed to client)
   const apiKey = process.env.IMPORTANT_F_F_K;
   if (!apiKey) {
-    res.status(500).json({ error: 'Missing API key' });
+    console.error('Missing API key in environment variables');
+    res.status(500).json({ error: 'Server configuration error' });
     return;
   }
 
   try {
-    const response = await fetch('https://leads-api.dealertower.com/v1/leads/', {
+    // Forward to the actual Reel Wheel API with secure API key
+    const response = await fetch('https://reel-wheel-api-x92jj.ondigitalocean.app/v1/leads/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'X-API-KEY': apiKey, // API key is handled server-side only
       },
       body: JSON.stringify(req.body),
     });
+
     const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('API Error:', data);
+      res.status(response.status).json(data);
+      return;
+    }
+
     res.status(response.status).json(data);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to send lead' });
+    console.error('Proxy Error:', err);
+    res.status(500).json({ error: 'Failed to submit lead' });
   }
 }

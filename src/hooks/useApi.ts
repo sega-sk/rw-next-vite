@@ -27,11 +27,13 @@ export function useApi<T>(
   });
 
   const execute = async () => {
-    if (options.cacheKey) {
-      try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        
-        const result = await cacheManager.get(
+    try {
+      setState(prev => ({ ...prev, loading: true, error: null }));
+      
+      let result: T;
+      
+      if (options.cacheKey && !options.skipCache) {
+        result = await cacheManager.get(
           options.cacheKey!,
           apiCall,
           {
@@ -40,36 +42,24 @@ export function useApi<T>(
             skipCache: options.skipCache
           }
         );
-        
-        setState({ data: result, loading: false, error: null });
-        return result;
-      } catch (error) {
-        // Use fallback data if provided
-        if (options.fallbackData) {
-          setState({ data: options.fallbackData, loading: false, error: null });
-          return options.fallbackData;
-        }
-        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-        setState({ data: null, loading: false, error: errorMessage });
-        throw error;
+      } else {
+        result = await apiCall();
       }
-    } else {
-      setState(prev => ({ ...prev, loading: true, error: null }));
       
-      try {
-        const result = await apiCall();
-        setState({ data: result, loading: false, error: null });
-        return result;
-      } catch (error) {
-        // Use fallback data if provided
-        if (options.fallbackData) {
-          setState({ data: options.fallbackData, loading: false, error: null });
-          return options.fallbackData;
-        }
-        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-        setState({ data: null, loading: false, error: errorMessage });
-        throw error;
+      console.log('useApi execute result:', result); // Debug log
+      setState({ data: result, loading: false, error: null });
+      return result;
+    } catch (error) {
+      console.error('useApi execute error:', error); // Debug log
+      
+      // Use fallback data if provided
+      if (options.fallbackData) {
+        setState({ data: options.fallbackData, loading: false, error: null });
+        return options.fallbackData;
       }
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      setState({ data: null, loading: false, error: errorMessage });
+      throw error;
     }
   };
 
@@ -79,7 +69,8 @@ export function useApi<T>(
 
   useEffect(() => {
     if (options.immediate) {
-      execute().catch(() => {
+      execute().catch((error) => {
+        console.error('useApi immediate execution failed:', error);
         // Error already handled in execute function
       });
     }

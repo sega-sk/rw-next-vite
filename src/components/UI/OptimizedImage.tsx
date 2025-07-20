@@ -1,95 +1,92 @@
 // Optimized Image component with fallback support and loading states
 
 import React, { useState, useEffect } from 'react';
-import encryptedLoader, { IMAGE_SIZES } from '../../utils/imageOptimization';
 
-interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface OptimizedImageProps {
   src: string;
   alt: string;
-  size?: keyof typeof IMAGE_SIZES;
-  fallback?: string;
-  lazy?: boolean;
+  size?: 'thumbnail' | 'small' | 'medium' | 'large' | 'main' | 'card' | 'gallery';
   className?: string;
-  objectFit?: 'contain' | 'cover' | 'fill' | 'scale-down' | 'none';
+  onClick?: () => void;
   priority?: boolean;
-  width?: number;
-  height?: number;
+  loading?: 'lazy' | 'eager';
 }
 
-export default function OptimizedImage({ 
+const OptimizedImage: React.FC<OptimizedImageProps> = ({ 
   src, 
   alt, 
-  size = 'medium',
-  fallback = '/vdp hero (2).webp',
-  lazy = true,
-  className = '',
-  objectFit,
+  size = 'medium', 
+  className = '', 
+  onClick,
   priority = false,
-  width,
-  height,
-  ...props 
-}: OptimizedImageProps) {
-  const [optimizedSrc, setOptimizedSrc] = useState<string>(src);
-  const [isLoading, setIsLoading] = useState(true);
+  loading = 'lazy'
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    const optimizeImage = async () => {
-      try {
-        if (src !== optimizedSrc) setIsLoading(true);
-        const optimized = await encryptedLoader({ 
-          src, 
-          ...IMAGE_SIZES[size] 
-        });
-        setOptimizedSrc(optimized);
-      } catch (error) {
-        console.warn('Failed to optimize image:', error);
-        setOptimizedSrc(src); // Fallback to original
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Size mappings for responsive images
+  const sizeConfigs = {
+    thumbnail: { width: 80, height: 80, quality: 75 },
+    small: { width: 200, height: 200, quality: 80 },
+    medium: { width: 400, height: 300, quality: 85 },
+    card: { width: 600, height: 400, quality: 85 },
+    large: { width: 800, height: 600, quality: 90 },
+    main: { width: 1200, height: 800, quality: 95 },
+    gallery: { width: 1600, height: 1200, quality: 95 }
+  };
 
-    if (src) {
-      optimizeImage();
+  const config = sizeConfigs[size];
+
+  // Generate optimized image URL
+  const getOptimizedUrl = (originalSrc: string): string => {
+    // If it's already an external optimized URL, use as-is
+    if (originalSrc.includes('images.pexels.com') || originalSrc.includes('cdn.') || originalSrc.includes('cloudinary.com')) {
+      if (originalSrc.includes('pexels.com')) {
+        return `${originalSrc}?auto=compress&cs=tinysrgb&w=${config.width}&h=${config.height}&dpr=2`;
+      }
+      return originalSrc;
     }
-  }, [src, size]);
+
+    // For local images, return as-is (they're already optimized)
+    return originalSrc;
+  };
+
+  const optimizedSrc = getOptimizedUrl(src);
 
   const handleLoad = () => {
-    setIsLoading(false);
-    setHasError(false);
+    setIsLoaded(true);
   };
 
   const handleError = () => {
-    setIsLoading(false);
     setHasError(true);
-    if (fallback && optimizedSrc !== fallback) {
-      setOptimizedSrc(fallback);
-      setHasError(false);
-    }
+    setIsLoaded(true);
   };
 
-  // Apply object-fit class if specified
-  const objectFitClass = objectFit ? `object-${objectFit}` : '';
+  // Fallback image
+  const fallbackSrc = '/vdp hero (2).webp';
 
   return (
-    <div className={`relative ${className}`}>
-      {isLoading && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded" aria-hidden="true" />
+    <div className={`relative overflow-hidden ${className}`}>
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
       )}
       
       <img
-        src={hasError ? fallback : optimizedSrc}
+        src={hasError ? fallbackSrc : optimizedSrc}
         alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          isLoaded ? 'opacity-100' : 'opacity-0'
+        } ${onClick ? 'cursor-pointer' : ''}`}
         onLoad={handleLoad}
         onError={handleError}
-        loading={priority ? 'eager' : (lazy ? 'lazy' : 'eager')}
+        onClick={onClick}
+        loading={priority ? 'eager' : loading}
         decoding="async"
-        width={width}
-        height={height}
-        className={`${objectFitClass} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-        {...props}
       />
     </div>
   );
-}
+};
+
+export default OptimizedImage;

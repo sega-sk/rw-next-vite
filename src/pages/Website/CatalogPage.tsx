@@ -12,13 +12,15 @@ import SEOHead from '../../components/UI/SEOHead';
 import Tooltip from '../../components/UI/Tooltip';
 import OptimizedImage from '../../components/UI/OptimizedImage';
 
-// Product Card Component with Image Slider
-function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: {
-  product: any,
-  onProductClick: (product: any) => void,
-  onFavoriteToggle: (productId: string) => void,
-  isFavorite: (productId: string) => boolean
-}) {
+// Product Card Component with Image Slider - Fix TypeScript types
+interface ProductCardProps {
+  product: any; // You can create a proper Product interface later
+  onProductClick: (product: any) => void;
+  onFavoriteToggle: (productId: string) => void;
+  isFavorite: (productId: string) => boolean;
+}
+
+function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Use product images or fallback to demo images
@@ -180,77 +182,127 @@ export default function CatalogPage() {
   const itemsPerPage = 9;
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  // Fetch products with filters
+  // Fetch products with filters - Fix the API call
   const { data: productsData, loading, execute: refetchProducts } = useApi(
-    () => searchTerm.trim() 
-      ? apiService.searchProducts({
-          q: searchTerm,
-          product_types: selectedFilters.productType && selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
-          limit: 100
-        })
-      : apiService.getProducts({
-          product_types: selectedFilters.productType && selectedFilters.productType !== 'Any' ? [selectedFilters.productType] : undefined,
-          movies: selectedFilters.movie && selectedFilters.movie !== 'Any' ? [selectedFilters.movie] : undefined,
-          genres: selectedFilters.genre && selectedFilters.genre !== 'Any' ? [selectedFilters.genre] : undefined,
-          sort: sortBy === 'Featured' ? '-created_at' : sortBy.toLowerCase(),
-          limit: 100
-        }),
+    () => {
+      // Build the API call parameters
+      const apiParams: any = {
+        limit: 100
+      };
+
+      // Add search term if present
+      if (searchTerm.trim()) {
+        apiParams.q = searchTerm.trim();
+      }
+
+      // Add product type filter
+      if (selectedFilters.productType && selectedFilters.productType !== 'Any') {
+        apiParams.product_types = [selectedFilters.productType];
+      }
+
+      // Add movie filter
+      if (selectedFilters.movie && selectedFilters.movie !== 'Any') {
+        apiParams.movies = [selectedFilters.movie];
+      }
+
+      // Add genre filter
+      if (selectedFilters.genre && selectedFilters.genre !== 'Any') {
+        apiParams.genres = [selectedFilters.genre];
+      }
+
+      // Add sorting
+      if (sortBy !== 'Featured') {
+        apiParams.sort = sortBy.toLowerCase().replace(/\s+/g, '_');
+      }
+
+      console.log('API call parameters:', apiParams); // Debug log
+
+      // Use search API if there's a search term, otherwise use regular products API
+      if (searchTerm.trim()) {
+        return apiService.searchProducts(apiParams);
+      } else {
+        return apiService.getProducts(apiParams);
+      }
+    },
     { 
       immediate: true,
-      cacheKey: searchTerm.trim() 
-        ? `search-catalog-${searchTerm}-${selectedFilters.productType}` 
-        : `catalog-${JSON.stringify(selectedFilters)}-${sortBy}`,
-      cacheTTL: searchTerm.trim() ? 30 * 1000 : 2 * 60 * 1000,
-      staleWhileRevalidate: !searchTerm.trim(),
-      skipCache: searchTerm.trim() && searchTerm.length < 3
+      // Remove caching for debugging
+      skipCache: true
     }
   );
 
-  // Use API data if available, otherwise use demo fallback
-  const allProducts = productsData?.rows && productsData.rows.length > 0
-    ? productsData.rows
-    : [
-        {
-          id: 'demo-1',
-          title: 'Demo Batmobile',
-          subtitle: 'The Dark Knight Returns',
-          images: ['/vdp hero (2).webp'],
-          product_types: ['vehicle'],
-          movies: ['Batman'],
-          genres: ['Action', 'Superhero'],
-          keywords: ['batmobile', 'batman', 'movie car'],
-          sale_price: '250000',
-          retail_price: '300000',
-          created_at: new Date().toISOString(),
-          slug: 'demo-batmobile',
-        }
-      ];
+  // Debug logs
+  console.log('Products data:', productsData);
+  console.log('Loading state:', loading);
+  console.log('Search term:', searchTerm);
+  console.log('Selected filters:', selectedFilters);
+
+  // Use API data if available, with better fallback handling
+  const allProducts = React.useMemo(() => {
+    if (productsData?.rows && Array.isArray(productsData.rows)) {
+      return productsData.rows;
+    }
+    
+    // Fallback to demo data for testing
+    console.log('Using fallback demo data');
+    return [
+      {
+        id: 'demo-1',
+        title: 'Demo Batmobile',
+        subtitle: 'The Dark Knight Returns',
+        images: ['/vdp hero (2).webp'],
+        product_types: ['vehicle'],
+        movies: ['Batman'],
+        genres: ['Action', 'Superhero'],
+        keywords: ['batmobile', 'batman', 'movie car'],
+        sale_price: '250000',
+        retail_price: '300000',
+        created_at: new Date().toISOString(),
+        slug: 'demo-batmobile',
+      },
+      {
+        id: 'demo-2',
+        title: 'DeLorean Time Machine',
+        subtitle: 'Back to the Future',
+        images: ['/vdp hero (2).webp'],
+        product_types: ['vehicle'],
+        movies: ['Back to the Future'],
+        genres: ['Sci-Fi', 'Adventure'],
+        keywords: ['delorean', 'time machine', 'movie car'],
+        sale_price: '180000',
+        retail_price: '220000',
+        created_at: new Date().toISOString(),
+        slug: 'demo-delorean',
+      }
+    ];
+  }, [productsData]);
 
   // Error fallback: show maintenance message if API fails
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (productsData === undefined && !loading) {
+    if (productsData === undefined && !loading && searchTerm === '') {
+      console.log('Setting error state - no data and not loading');
       setHasError(true);
     } else {
       setHasError(false);
     }
-  }, [productsData, loading]);
+  }, [productsData, loading, searchTerm]);
 
-  // Apply client-side filtering for dummy data
+  // Apply client-side filtering for additional refinement
   const filteredProducts = allProducts.filter(product => {
     const matchesSearch = !searchTerm || 
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.subtitle?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = selectedFilters.productType === 'Any' || 
-      product.product_types.includes(selectedFilters.productType);
+      (product.product_types && product.product_types.includes(selectedFilters.productType));
     
     const matchesMovie = selectedFilters.movie === 'Any' || 
-      product.movies?.includes(selectedFilters.movie);
+      (product.movies && product.movies.includes(selectedFilters.movie));
     
     const matchesGenre = selectedFilters.genre === 'Any' || 
-      product.genres?.includes(selectedFilters.genre);
+      (product.genres && product.genres.includes(selectedFilters.genre));
 
     return matchesSearch && matchesType && matchesMovie && matchesGenre;
   });
@@ -267,7 +319,7 @@ export default function CatalogPage() {
         );
       case 'Sale Price: High to Low':
         return (
-          parseFloat(b.sale_price || a.retail_price || '0') -
+          parseFloat(b.sale_price || b.retail_price || '0') -
           parseFloat(a.sale_price || a.retail_price || '0')
         );
       case 'Newest':
@@ -287,9 +339,10 @@ export default function CatalogPage() {
   const endIndex = startIndex + itemsPerPage;
   const currentProducts = sortedProducts.slice(startIndex, endIndex);
 
-  // Refetch when filters change
+  // Refetch when filters change - with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      console.log('Refetching products due to filter change');
       refetchProducts();
       setCurrentPage(1);
     }, 300);
@@ -297,8 +350,18 @@ export default function CatalogPage() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm, selectedFilters, sortBy]);
 
+  // Debug render
+  console.log('Rendering catalog page with:', {
+    allProductsCount: allProducts.length,
+    filteredProductsCount: filteredProducts.length,
+    sortedProductsCount: sortedProducts.length,
+    currentProductsCount: currentProducts.length,
+    loading,
+    hasError
+  });
+
   const handleProductClick = (product: any) => {
-    const type = product.product_types[0] || 'vehicle';
+    const type = product.product_types?.[0] || 'vehicle';
     navigate(`/catalog/${type}/${product.slug}`);
   };
 

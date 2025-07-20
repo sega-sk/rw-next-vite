@@ -30,49 +30,72 @@ interface AvailableFilterValue {
   count: number;
 }
 
-interface Product {
+export interface Product {
   id: string;
   title: string;
   subtitle?: string;
+  description_title?: string; // Add description_title field
   description?: string;
-  price: number;
-  sale_price?: number;
-  retail_price?: number;
   images: string[];
+  product_types: string[];
+  movies: string[];
+  genres: string[];
+  keywords: string[];
+  available_rental_periods: RentalPeriod[];
+  background_image_url?: string;
+  is_background_image_activated?: boolean;
+  is_trending_model?: boolean;
+  is_on_homepage_slider?: boolean;
+  sale_price?: string;
+  retail_price?: string;
+  rental_price_hourly?: string;
+  rental_price_daily?: string;
+  rental_price_weekly?: string;
+  rental_price_monthly?: string;
+  rental_price_yearly?: string;
   slug: string;
-  keywords?: string[];
-  product_types?: string[];
-  genres?: string[];
-  movies?: string[];
-  video_url?: string;
   created_at?: string;
   updated_at?: string;
   memorabilia_ids?: string[];
   merchandise_ids?: string[];
-  products?: Product[];
+  product_ids?: string[];
+  video_url?: string;
+  // Related data
   memorabilia?: Memorabilia[];
   merchandise?: Merchandise[];
+  products?: Product[];
 }
 
-interface ProductCreate {
+export interface ProductCreate {
   title: string;
   subtitle?: string;
+  description_title?: string; // Add description_title field
   description?: string;
-  price: number;
+  images: string[];
+  product_types: string[];
+  movies: string[];
+  genres: string[];
+  keywords: string[];
+  available_rental_periods: RentalPeriod[];
+  background_image_url?: string;
+  is_background_image_activated?: boolean;
+  is_trending_model?: boolean;
+  is_on_homepage_slider?: boolean;
   sale_price?: number;
   retail_price?: number;
-  images?: string[];
+  rental_price_hourly?: number;
+  rental_price_daily?: number;
+  rental_price_weekly?: number;
+  rental_price_monthly?: number;
+  rental_price_yearly?: number;
   slug?: string;
-  keywords?: string[];
-  product_types?: string[];
-  genres?: string[];
-  movies?: string[];
-  video_url?: string;
   memorabilia_ids?: string[];
   merchandise_ids?: string[];
+  product_ids?: string[];
+  video_url?: string;
 }
 
-interface ProductUpdate extends Partial<ProductCreate> {}
+export interface ProductUpdate extends Partial<ProductCreate> {}
 
 interface Memorabilia {
   id: string;
@@ -179,6 +202,7 @@ class ApiService {
         ...options,
         headers: {
           ...authService.getAuthHeaders(),
+          // Remove any hardcoded X-API-Key from here
           ...options.headers,
         },
       });
@@ -218,84 +242,6 @@ class ApiService {
     }
   }
 
-  private async makePublicRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T | ListResponse<any>> {
-    const url = `${this.API_BASE_URL}${endpoint}`;
-    
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
-      }
-
-      // Handle 204 No Content responses
-      if (response.status === 204) {
-        return {} as T;
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.warn(`Public API request failed for ${endpoint}:`, error);
-      throw error;
-    }
-  }
-
-  // User Management API (Admin only)
-  async getUsers(params: {
-    limit?: number;
-    offset?: number;
-    q?: string;
-    sort?: string;
-  } = {}): Promise<ListResponse<User>> {
-    const searchParams = new URLSearchParams();
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, value.toString());
-      }
-    });
-
-    return this.makeAuthenticatedRequest(`/v1/users/?${searchParams.toString()}`) as Promise<ListResponse<User>>;
-  }
-
-  async getUser(userId: string): Promise<User> {
-    return this.makeAuthenticatedRequest(`/v1/users/${userId}`) as Promise<User>;
-  }
-
-  async createUser(data: UserCreate): Promise<User> {
-    const result = await this.makeAuthenticatedRequest('/v1/users/', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }) as User;
-    
-    return result;
-  }
-
-  async updateUser(id: string, data: UserUpdate): Promise<User> {
-    const result = await this.makeAuthenticatedRequest(`/v1/users/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }) as User;
-    
-    return result;
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    await this.makeAuthenticatedRequest(`/v1/users/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
   // Products API
   async getProducts(params: {
     limit?: number;
@@ -333,8 +279,35 @@ class ApiService {
       params.genres.forEach(genre => searchParams.append('genres', genre));
     }
 
-    // Use public request for non-authenticated access
-    return this.makePublicRequest(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
+    console.log('API request URL:', `/v1/products/?${searchParams.toString()}`); // Debug log
+
+    try {
+      const result = await this.makePublicRequest(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
+      console.log('API response:', result); // Debug log
+      return result;
+    } catch (error) {
+      console.error('API request failed:', error);
+      // Return empty result instead of throwing
+      return { 
+        rows: [], 
+        total: 0, 
+        offset: 0, 
+        error: error instanceof Error ? error.message : 'API request failed' 
+      } as ListResponse<Product>;
+    }
+  }
+
+  // Get single product by slug
+  async getProduct(slug: string): Promise<Product> {
+    console.log('Fetching product:', slug); // Debug log
+    try {
+      const result = await this.makePublicRequest(`/v1/products/${slug}`) as Promise<Product>;
+      console.log('Product response:', result); // Debug log
+      return result;
+    } catch (error) {
+      console.error('Get product failed:', error);
+      throw error;
+    }
   }
 
   // Dedicated search endpoint for better performance
@@ -342,6 +315,8 @@ class ApiService {
     q: string;
     limit?: number;
     product_types?: string[];
+    movies?: string[];
+    genres?: string[];
   } = { q: '' }): Promise<ListResponse<Product>> {
     const searchParams = new URLSearchParams();
     
@@ -355,37 +330,27 @@ class ApiService {
     if (params.product_types?.length) {
       params.product_types.forEach(type => searchParams.append('product_types', type));
     }
+    if (params.movies?.length) {
+      params.movies.forEach(movie => searchParams.append('movies', movie));
+    }
+    if (params.genres?.length) {
+      params.genres.forEach(genre => searchParams.append('genres', genre));
+    }
+
+    console.log('Search API request URL:', `/v1/products/?${searchParams.toString()}`); // Debug log
 
     try {
       const result = await this.makePublicRequest(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
+      console.log('Search API response:', result); // Debug log
       return result;
     } catch (error) {
       console.warn('Search failed:', error);
-      return { rows: [], total: 0, offset: 0, error: error instanceof Error ? error.message : 'Search failed' } as ListResponse<Product>;
-    }
-  }
-
-  async getProduct(idOrSlug: string): Promise<Product> {
-    try {
-      const result = await this.makePublicRequest(`/v1/products/${idOrSlug}`) as Product;
-      // Normalize booleans and arrays for editor compatibility
-      return {
-        ...result,
-        is_trending_model: !!result.is_trending_model,
-        is_on_homepage_slider: !!result.is_on_homepage_slider,
-        memorabilia_ids: Array.isArray((result as any).memorabilia_ids)
-          ? (result as any).memorabilia_ids.map(String)
-          : [],
-        merchandise_ids: Array.isArray((result as any).merchandise_ids)
-          ? (result as any).merchandise_ids.map(String)
-          : [],
-        product_ids: Array.isArray((result as any).product_ids)
-          ? (result as any).product_ids.map(String)
-          : [],
-      };
-    } catch (error) {
-      console.warn(`Failed to fetch product ${idOrSlug}:`, error);
-      throw error;
+      return { 
+        rows: [], 
+        total: 0, 
+        offset: 0, 
+        error: error instanceof Error ? error.message : 'Search failed' 
+      } as ListResponse<Product>;
     }
   }
 
@@ -437,7 +402,7 @@ class ApiService {
     limit?: number;
     offset?: number;
     q?: string;
-    sort?: string;
+    id?: string;
   } = {}): Promise<ListResponse<Memorabilia>> {
     const searchParams = new URLSearchParams();
     
@@ -447,11 +412,18 @@ class ApiService {
       }
     });
 
-    return this.makePublicRequest(`/v1/memorabilia/?${searchParams.toString()}`) as Promise<ListResponse<Memorabilia>>;
-  }
+    // If fetching a single item by ID, use the specific endpoint
+    if (params.id) {
+      try {
+        const singleItem = await this.makeAuthenticatedRequest(`/v1/memorabilia/${params.id}`) as Promise<Memorabilia>;
+        return { rows: [singleItem], total: 1, offset: 0 } as ListResponse<Memorabilia>;
+      } catch (error) {
+        console.warn('Failed to fetch single memorabilia item:', error);
+        return { rows: [], total: 0, offset: 0 } as ListResponse<Memorabilia>;
+      }
+    }
 
-  async getMemorabiliaItem(idOrSlug: string): Promise<Memorabilia> {
-    return this.makePublicRequest(`/v1/memorabilia/${idOrSlug}`) as Promise<Memorabilia>;
+    return this.makeAuthenticatedRequest(`/v1/memorabilia/?${searchParams.toString()}`) as Promise<ListResponse<Memorabilia>>;
   }
 
   async createMemorabilia(data: MemorabiliaCreate): Promise<Memorabilia> {
@@ -492,7 +464,7 @@ class ApiService {
     limit?: number;
     offset?: number;
     q?: string;
-    sort?: string;
+    id?: string;
   } = {}): Promise<ListResponse<Merchandise>> {
     const searchParams = new URLSearchParams();
     
@@ -502,13 +474,18 @@ class ApiService {
       }
     });
 
-    // FIX: endpoint should be /v1/merchandises/
-    return this.makePublicRequest(`/v1/merchandises/?${searchParams.toString()}`) as Promise<ListResponse<Merchandise>>;
-  }
+    // If fetching a single item by ID, use the specific endpoint
+    if (params.id) {
+      try {
+        const singleItem = await this.makeAuthenticatedRequest(`/v1/merchandises/${params.id}`) as Promise<Merchandise>;
+        return { rows: [singleItem], total: 1, offset: 0 } as ListResponse<Merchandise>;
+      } catch (error) {
+        console.warn('Failed to fetch single merchandise item:', error);
+        return { rows: [], total: 0, offset: 0 } as ListResponse<Merchandise>;
+      }
+    }
 
-  async getMerchandiseItem(idOrSlug: string): Promise<Merchandise> {
-    // FIX: endpoint should be /v1/merchandises/
-    return this.makePublicRequest(`/v1/merchandises/${idOrSlug}`) as Promise<Merchandise>;
+    return this.makeAuthenticatedRequest(`/v1/merchandises/?${searchParams.toString()}`) as Promise<ListResponse<Merchandise>>;
   }
 
   async createMerchandise(data: MerchandiseCreate): Promise<Merchandise> {
