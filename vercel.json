@@ -1,7 +1,7 @@
 {
   "functions": {
     "src/api/leadProxy.ts": {
-      "runtime": "nodejs18.x"
+      "runtime": "@vercel/node"
     }
   },
   "rewrites": [
