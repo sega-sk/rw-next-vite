@@ -51,11 +51,12 @@ class LeadsService {
   // Submit a new lead via your backend proxy (X-API-Key is handled server-side)
   async submitLead(data: LeadCreate): Promise<Lead> {
     try {
-      // POST to your backend API route, which will add the X-API-Key server-side
+      // ✅ SAFE: Uses proxy endpoint, API key stays on server
       const response = await fetch('/api/submit-lead', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
+          // No X-API-Key here - handled by the proxy
         },
         body: JSON.stringify(data),
       });
