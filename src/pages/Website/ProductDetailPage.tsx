@@ -717,10 +717,10 @@ function getBgImage(product) {
   }
   // Default backgrounds (public folder)
   if (window.innerWidth <= 428) {
-    return '/product-hero-bg-mobile.webp';
+    return '/reel_wheels_background_m.webp';
   }
   if (window.innerWidth <= 768) {
-    return '/product-hero-bg-tablet.webp';
+    return '/reel_wheels_background_t.webp';
   }
-  return '/product-hero-bg.webp';
+  return '/reel_wheels_background_d.webp';
 }

@@ -207,7 +207,25 @@ export default function CatalogPage() {
   );
 
   // Use API data if available, otherwise use dummy data
-  const allProducts = productsData?.rows || [];
+  const allProducts = productsData?.rows && productsData.rows.length > 0
+    ? productsData.rows
+    : [
+        // Fallback demo product if API returns empty
+        {
+          id: 'demo-1',
+          title: 'Demo Batmobile',
+          subtitle: 'The Dark Knight Returns',
+          images: ['/vdp hero (2).webp'],
+          product_types: ['vehicle'],
+          movies: ['Batman'],
+          genres: ['Action', 'Superhero'],
+          keywords: ['batmobile', 'batman', 'movie car'],
+          sale_price: '250000',
+          retail_price: '300000',
+          created_at: new Date().toISOString(),
+          slug: 'demo-batmobile',
+        }
+      ];
 
   // Error fallback: show maintenance message if API fails
   const [hasError, setHasError] = useState(false);
