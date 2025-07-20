@@ -17,14 +17,15 @@
 .top-announcement {
   background: #111 !important;
   color: #fff !important;
-  transition: .3s;
 }
 .top-announcement a {
   color: #ca8a04;
   font-weight: 600;
+  transition: .3s;
 }
-.top-announcement:hover {
+.top-announcement a:hover {
   opacity: .7;
+  text-decoration: underline;
 }
 
 [for="field-product-video-url"] {
