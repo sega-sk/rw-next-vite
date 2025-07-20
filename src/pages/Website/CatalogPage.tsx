@@ -319,7 +319,7 @@ export default function CatalogPage() {
         );
       case 'Sale Price: High to Low':
         return (
-          parseFloat(b.sale_price || b.retail_price || '0') -
+          parseFloat(b.sale_price || a.retail_price || '0') -
           parseFloat(a.sale_price || a.retail_price || '0')
         );
       case 'Newest':
@@ -596,6 +596,113 @@ export default function CatalogPage() {
           {/* ...existing code for mobile filters dropdown... */}
         </div>
         {/* ...existing code... */}
+      </div>
+
+      {/* Products Grid Section - Add this missing section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-12">
+        {/* Results count and view toggle */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-sm text-gray-600">
+            {loading ? 'Loading...' : `${sortedProducts.length} products found`}
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {hasError && !loading && (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load products</h3>
+            <p className="text-gray-600 mb-4">We're having trouble connecting to our catalog. Please try again.</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Products Grid */}
+        {!loading && !hasError && (
+          <>
+            {currentProducts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 catalog-products-grid">
+                {currentProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onProductClick={handleProductClick}
+                    onFavoriteToggle={toggleFavorite}
+                    isFavorite={isFavorite}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || selectedFilters.productType !== 'Any' || selectedFilters.movie !== 'Any' || selectedFilters.genre !== 'Any'
+                    ? 'Try adjusting your search criteria or filters.'
+                    : 'No products are available at the moment.'}
+                </p>
+                {(searchTerm || selectedFilters.productType !== 'Any' || selectedFilters.movie !== 'Any' || selectedFilters.genre !== 'Any') && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedFilters({ productType: 'Any', movie: 'Any', genre: 'Any' });
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && currentProducts.length > 0 && (
+              <div className="mt-12 flex justify-center">
+                <nav className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 rounded-md transition-colors ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </nav>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <SearchModal 

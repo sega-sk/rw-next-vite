@@ -260,11 +260,6 @@ class ApiService {
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
 
-      // Handle 204 No Content responses
-      if (response.status === 204) {
-        return {} as T;
-      }
-
       return await response.json();
     } catch (error) {
       console.warn(`Public API request failed for ${endpoint}:`, error);
@@ -286,7 +281,7 @@ class ApiService {
   } = {}): Promise<ListResponse<Product>> {
     const searchParams = new URLSearchParams();
     
-    // Add basic parameters
+    // Add parameters to URL
     if (params.limit) searchParams.append('limit', params.limit.toString());
     if (params.offset) searchParams.append('offset', params.offset.toString());
     if (params.q) searchParams.append('q', params.q);
