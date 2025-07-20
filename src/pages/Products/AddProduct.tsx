@@ -207,7 +207,7 @@ export default function AddProduct() {
     }
   }, [isEditing, editProduct]);
 
-  // When editing, ensure memorabilia_ids and merchandise_ids are always arrays of strings
+  // Defensive: ensure editProduct is loaded before using its fields
   useEffect(() => {
     if (isEditing && editProduct) {
       setFormData({
@@ -456,6 +456,17 @@ export default function AddProduct() {
       setBgRemoving(false);
     }
   };
+
+  // Defensive: do not render form until editProduct is loaded in edit mode
+  if (isEditing && loadingProduct) {
+    return (
+      <div className="p-6">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
