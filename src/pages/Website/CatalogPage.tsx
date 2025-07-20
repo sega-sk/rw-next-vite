@@ -452,7 +452,7 @@ export default function CatalogPage() {
                   className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden"
                 >
                   <ul className="py-2">
-                    {{
+                    {[
                       'Featured',
                       'Sale Price: Low to High',
                       'Sale Price: High to Low',
@@ -471,7 +471,7 @@ export default function CatalogPage() {
                       'Newest',
                       'A-Z',
                       'Z-A'
-                    }.map(option => (
+                    ].map(option => (
                       <li key={option}>
                         <button
                           type="button"
