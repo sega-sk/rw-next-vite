@@ -32,14 +32,18 @@ export function useApi<T>(
       
       let result: T;
       
-      if (options.cacheKey && !options.skipCache) {
+      // Check if we're on admin pages - always skip cache
+      const isAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+      const shouldSkipCache = options.skipCache || isAdminPage;
+      
+      if (options.cacheKey && !shouldSkipCache) {
         result = await cacheManager.get(
           options.cacheKey!,
           apiCall,
           {
             ttl: options.cacheTTL,
             staleWhileRevalidate: options.staleWhileRevalidate,
-            skipCache: options.skipCache
+            skipCache: shouldSkipCache
           }
         );
       } else {
@@ -74,7 +78,8 @@ export function useApi<T>(
         // Error already handled in execute function
       });
     }
-  }, []);
+    // Add empty dependency array to prevent infinite re-renders
+  }, []); // Only run on mount
 
   return {
     ...state,

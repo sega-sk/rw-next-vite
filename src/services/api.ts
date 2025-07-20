@@ -242,6 +242,36 @@ class ApiService {
     }
   }
 
+  // Add the missing makePublicRequest method
+  private async makePublicRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.API_BASE_URL}${endpoint}`;
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      // Handle 204 No Content responses
+      if (response.status === 204) {
+        return {} as T;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.warn(`Public API request failed for ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
   // Products API
   async getProducts(params: {
     limit?: number;
@@ -282,7 +312,7 @@ class ApiService {
     console.log('API request URL:', `/v1/products/?${searchParams.toString()}`); // Debug log
 
     try {
-      const result = await this.makePublicRequest(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
+      const result = await this.makePublicRequest<ListResponse<Product>>(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
       console.log('API response:', result); // Debug log
       return result;
     } catch (error) {
@@ -301,7 +331,7 @@ class ApiService {
   async getProduct(slug: string): Promise<Product> {
     console.log('Fetching product:', slug); // Debug log
     try {
-      const result = await this.makePublicRequest(`/v1/products/${slug}`) as Promise<Product>;
+      const result = await this.makePublicRequest<Product>(`/v1/products/${slug}`) as Promise<Product>;
       console.log('Product response:', result); // Debug log
       return result;
     } catch (error) {
@@ -340,7 +370,7 @@ class ApiService {
     console.log('Search API request URL:', `/v1/products/?${searchParams.toString()}`); // Debug log
 
     try {
-      const result = await this.makePublicRequest(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
+      const result = await this.makePublicRequest<ListResponse<Product>>(`/v1/products/?${searchParams.toString()}`) as Promise<ListResponse<Product>>;
       console.log('Search API response:', result); // Debug log
       return result;
     } catch (error) {

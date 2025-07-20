@@ -86,8 +86,9 @@ class CacheManager {
   ): Promise<T> {
     const config = { ...this.config, ...options };
     
-    // Skip cache for search queries or when explicitly requested
-    if (options.skipCache || key.startsWith('search-')) {
+    // Skip cache for admin pages or search queries or when explicitly requested
+    const isAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    if (options.skipCache || key.startsWith('search-') || isAdminPage) {
       return this.fetchAndCache(key, fetcher, false);
     }
     
@@ -164,8 +165,9 @@ class CacheManager {
   }
 
   private persistToStorage<T>(key: string, data: T, persist: boolean = true) {
-    // Don't persist search results or if storage is full
-    if (!persist || this.storageUsage > this.config.maxStorageSize) {
+    // Don't persist admin data, search results or if storage is full
+    const isAdminData = key.includes('admin') || key.includes('user') || key.includes('auth');
+    if (!persist || this.storageUsage > this.config.maxStorageSize || isAdminData) {
       return;
     }
     
@@ -185,32 +187,10 @@ class CacheManager {
     }
   }
 
-  private loadFromStorage<T>(key: string): T | null {
-    try {
-      const storageKey = `cache_${key}`;
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const item = JSON.parse(stored);
-        // Don't use storage data older than 1 hour
-        if (Date.now() - item.timestamp < 60 * 60 * 1000) {
-          return item.data;
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to load from storage:', error);
-    }
-    return null;
-  }
-
   private clearOldStorageItems() {
     try {
       const keys = Object.keys(localStorage);
       const cacheKeys = keys.filter(key => key.startsWith('cache_'));
-      
-      // Don't load search results from storage
-      if (key.startsWith('search-')) {
-        return null;
-      }
       
       // Sort by timestamp and remove oldest 25%
       const items = cacheKeys.map(key => {
@@ -230,6 +210,29 @@ class CacheManager {
     } catch (error) {
       console.warn('Failed to clear old storage items:', error);
     }
+  }
+
+  private loadFromStorage<T>(key: string): T | null {
+    // Don't load search results or admin data from storage
+    const isAdminData = key.includes('admin') || key.includes('user') || key.includes('auth');
+    if (key.startsWith('search-') || isAdminData) {
+      return null;
+    }
+    
+    try {
+      const storageKey = `cache_${key}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const item = JSON.parse(stored);
+        // Don't use storage data older than 1 hour
+        if (Date.now() - item.timestamp < 60 * 60 * 1000) {
+          return item.data;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load from storage:', error);
+    }
+    return null;
   }
 
   invalidate(key: string) {
@@ -303,12 +306,14 @@ class CacheManager {
   }
 }
 
-// Global cache instance
+// Global cache instance with different settings for admin vs website
+const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
 export const cacheManager = new CacheManager({
-  ttl: 3 * 60 * 1000, // Reduced to 3 minutes for better freshness
-  maxSize: 50, // Reduced memory cache size
-  maxStorageSize: 5, // 5MB max localStorage
-  staleWhileRevalidate: true
+  ttl: isAdminPath ? 0 : 1 * 60 * 1000, // No cache for admin, 1 minute for website
+  maxSize: isAdminPath ? 0 : 50, // No memory cache for admin
+  maxStorageSize: isAdminPath ? 0 : 5, // No localStorage for admin
+  staleWhileRevalidate: !isAdminPath // Only for website pages
 });
 
 // Cache invalidation helpers
