@@ -100,7 +100,8 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
             }`}
           />
         </button>
-        {product.sale_price && (
+        {/* Only show SALE badge if sale_price > 1000 */}
+        {product.sale_price && parseFloat(product.sale_price) > 1000 && (
           <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
             SALE
           </div>
@@ -434,6 +435,7 @@ export default function CatalogPage() {
               <button 
                 className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-full font-medium text-sm"
                 onClick={() => {
+                  // Use all sort options, including those only in desktop select
                   const sortOptions = [
                     'Featured',
                     'Sale Price: Low to High',
@@ -450,17 +452,21 @@ export default function CatalogPage() {
                     'Rental Price Monthly: High to Low',
                     'Rental Price Yearly: Low to High',
                     'Rental Price Yearly: High to Low',
-                    'Newest'
+                    'Newest',
+                    'A-Z',
+                    'Z-A'
                   ];
+                  // Always use the current value of sortBy to find index
                   const currentIndex = sortOptions.indexOf(sortBy);
                   const nextIndex = (currentIndex + 1) % sortOptions.length;
                   setSortBy(sortOptions[nextIndex]);
                 }}
+                type="button"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                 </svg>
-                SORT
+                SORT: <span className="ml-1">{sortBy}</span>
               </button>
               
               <button 

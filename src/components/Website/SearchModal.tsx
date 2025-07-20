@@ -21,6 +21,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       : Promise.resolve({ rows: [], total: 0, offset: 0 }),
     { 
       immediate: false,
+      keepPreviousData: false, // <-- ensure old data is cleared on new search
     }
   );
 
@@ -48,6 +49,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   useEffect(() => {
     if (searchTerm.trim()) {
+      // Clear previous results immediately before loading new data
+      // This will cause loading state to show without old data flicker
+      searchResults && (searchResults.rows.length = 0);
       const timeoutId = setTimeout(() => {
         searchProducts().catch(() => {
           // Fallback handled by the API service
@@ -56,7 +60,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       return () => clearTimeout(timeoutId);
     }
   }, [searchTerm]);
-
+  
   const handleProductClick = (product: any) => {
     const type = product.product_types?.[0] || 'vehicle';
     navigate(`/catalog/${type}/${product.slug}`);
