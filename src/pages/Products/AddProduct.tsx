@@ -325,6 +325,14 @@ export default function AddProduct() {
     }
   };
 
+  // Helper for conditional logging
+  function logIfEnabled(...args: any[]) {
+    if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+      // eslint-disable-next-line no-console
+      console.log(...args);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -336,7 +344,7 @@ export default function AddProduct() {
 
     if (!formData.title.trim()) {
       alert('Product title is required.');
-      console.log('Product create failed: Title required');
+      logIfEnabled('Product create failed: Title required');
       return;
     }
 
@@ -349,18 +357,18 @@ export default function AddProduct() {
           data: cleanedPayload,
         });
         success('Product updated!', 'Product updated successfully!');
-        console.log('Product updated:', editProduct.id);
+        logIfEnabled('Product updated:', editProduct.id);
         setTimeout(() => {
           alert('Product updated!');
-          console.log('Product update message shown');
+          logIfEnabled('Product update message shown');
         }, 500);
       } else {
         await createProduct(cleanedPayload);
         success('Product created!', 'Product created successfully!');
-        console.log('Product created:', formData.title);
+        logIfEnabled('Product created:', formData.title);
         setTimeout(() => {
           alert('Product created!');
-          console.log('Product create message shown');
+          logIfEnabled('Product create message shown');
         }, 500);
       }
       
@@ -380,7 +388,7 @@ export default function AddProduct() {
       } else {
         apiErrorMsg = JSON.stringify(error);
       }
-      console.error('Failed to save product:', apiErrorMsg, error);
+      logIfEnabled('Failed to save product:', apiErrorMsg, error);
       if (apiErrorMsg.toLowerCase().includes('authentication')) {
         error('Authentication Error', 'Your session has expired. Please login again.');
         navigate('/admin/login');

@@ -432,43 +432,66 @@ export default function CatalogPage() {
               {sortedProducts.length} results
             </div>
             <div className="flex items-center gap-3">
-              <button 
-                className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-full font-medium text-sm"
-                onClick={() => {
-                  // Use all sort options, including those only in desktop select
-                  const sortOptions = [
-                    'Featured',
-                    'Sale Price: Low to High',
-                    'Sale Price: High to Low',
-                    'Retail Price: Low to High',
-                    'Retail Price: High to Low',
-                    'Rental Price Hourly: Low to High',
-                    'Rental Price Hourly: High to Low',
-                    'Rental Price Daily: Low to High',
-                    'Rental Price Daily: High to Low',
-                    'Rental Price Weekly: Low to High',
-                    'Rental Price Weekly: High to Low',
-                    'Rental Price Monthly: Low to High',
-                    'Rental Price Monthly: High to Low',
-                    'Rental Price Yearly: Low to High',
-                    'Rental Price Yearly: High to Low',
-                    'Newest',
-                    'A-Z',
-                    'Z-A'
-                  ];
-                  // Always use the current value of sortBy to find index
-                  const currentIndex = sortOptions.indexOf(sortBy);
-                  const nextIndex = (currentIndex + 1) % sortOptions.length;
-                  setSortBy(sortOptions[nextIndex]);
-                }}
-                type="button"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-                SORT: <span className="ml-1">{sortBy}</span>
-              </button>
-              
+              {/* Mobile Sort Dropdown */}
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-full font-medium text-sm"
+                  onClick={() => {
+                    const dropdown = document.getElementById('mobile-sort-dropdown');
+                    if (dropdown) dropdown.classList.toggle('hidden');
+                  }}
+                  type="button"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  SORT: <span className="ml-1">{sortBy}</span>
+                </button>
+                <div
+                  id="mobile-sort-dropdown"
+                  className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden"
+                >
+                  <ul className="py-2">
+                    {{
+                      'Featured',
+                      'Sale Price: Low to High',
+                      'Sale Price: High to Low',
+                      'Retail Price: Low to High',
+                      'Retail Price: High to Low',
+                      'Rental Price Hourly: Low to High',
+                      'Rental Price Hourly: High to Low',
+                      'Rental Price Daily: Low to High',
+                      'Rental Price Daily: High to Low',
+                      'Rental Price Weekly: Low to High',
+                      'Rental Price Weekly: High to Low',
+                      'Rental Price Monthly: Low to High',
+                      'Rental Price Monthly: High to Low',
+                      'Rental Price Yearly: Low to High',
+                      'Rental Price Yearly: High to Low',
+                      'Newest',
+                      'A-Z',
+                      'Z-A'
+                    }.map(option => (
+                      <li key={option}>
+                        <button
+                          type="button"
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-blue-50 ${
+                            sortBy === option ? 'font-bold text-blue-600' : 'text-gray-700'
+                          }`}
+                          onClick={() => {
+                            setSortBy(option);
+                            const dropdown = document.getElementById('mobile-sort-dropdown');
+                            if (dropdown) dropdown.classList.add('hidden');
+                          }}
+                        >
+                          {option}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              {/* ...existing code for FILTERS button... */}
               <button 
                 className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-full font-medium text-sm relative"
                 onClick={() => {
@@ -490,140 +513,9 @@ export default function CatalogPage() {
               </button>
             </div>
           </div>
-          
-          <div className="mobile-filters-dropdown hidden mt-4 bg-white border border-gray-200 rounded-lg p-4 shadow-lg">
-            <div className="space-y-4">
-              <div className="relative">
-                <select
-                  value={selectedFilters.productType}
-                  onChange={(e) => setSelectedFilters(prev => ({ ...prev, productType: e.target.value }))}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full font-inter shadow-sm"
-                >
-                  <option value="Any">Any</option>
-                  <option value="vehicle">Vehicle</option>
-                  <option value="prop">Prop</option>
-                  <option value="costume">Costume</option>
-                </select>
-                <span className="absolute left-4 -top-2 bg-white px-1 text-xs text-gray-500 font-inter">Product Type</span>
-                <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={selectedFilters.movie}
-                  onChange={(e) => setSelectedFilters(prev => ({ ...prev, movie: e.target.value }))}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full font-inter shadow-sm"
-                >
-                  <option value="Any">Any</option>
-                  <option value="Batman">Batman</option>
-                  <option value="Back to the Future">Back to the Future</option>
-                  <option value="Ghostbusters">Ghostbusters</option>
-                  <option value="Knight Rider">Knight Rider</option>
-                  <option value="The Dukes of Hazzard">The Dukes of Hazzard</option>
-                </select>
-                <span className="absolute left-4 -top-2 bg-white px-1 text-xs text-gray-500 font-inter">Movie</span>
-                <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={selectedFilters.genre}
-                  onChange={(e) => setSelectedFilters(prev => ({ ...prev, genre: e.target.value }))}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full font-inter shadow-sm"
-                >
-                  <option value="Any">Any</option>
-                  <option value="Action">Action</option>
-                  <option value="Comedy">Comedy</option>
-                  <option value="Sci-Fi">Sci-Fi</option>
-                  <option value="Superhero">Superhero</option>
-                  <option value="Adventure">Adventure</option>
-                </select>
-                <span className="absolute left-4 -top-2 bg-white px-1 text-xs text-gray-500 font-inter">Genre</span>
-                <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-          </div>
+          {/* ...existing code for mobile filters dropdown... */}
         </div>
-
-        <div className="mb-6 hidden md:block">
-          <p className="text-gray-600 font-inter text-lg">{sortedProducts.length} Products found</p>
-        </div>
-
-        {loading ? (
-          <div className="catalog-products-grid flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="catalog-products-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {currentProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onProductClick={handleProductClick}
-                onFavoriteToggle={toggleFavorite}
-                isFavorite={isFavorite}
-              />
-            ))}
-          </div>
-        )}
-
-        {sortedProducts.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg font-inter">No products found matching your criteria.</p>
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div className="catalog-pagination flex justify-center mt-8 md:mt-12">
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-inter"
-              >
-                ‹
-              </button>
-              
-              {getPageNumbers().map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded-lg text-sm font-inter ${
-                    page === currentPage
-                      ? 'bg-blue-600 text-white'
-                      : 'border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              
-              {totalPages > 5 && currentPage < totalPages - 2 && (
-                <>
-                  <span className="px-3 py-2 text-sm text-gray-500 font-inter">...</span>
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 font-inter"
-                  >
-                    {totalPages}
-                  </button>
-                </>
-              )}
-              
-              <button 
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-inter"
-              >
-                ›
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="text-center mt-4 text-sm text-gray-600 font-inter">
-          Showing results {startIndex + 1}-{Math.min(endIndex, sortedProducts.length)} of {sortedProducts.length}
-        </div>
+        {/* ...existing code... */}
       </div>
 
       <SearchModal 

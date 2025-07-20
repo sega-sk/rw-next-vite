@@ -44,6 +44,14 @@ export default function AddMemorabilia() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Helper for conditional logging
+  function logIfEnabled(...args: any[]) {
+    if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+      // eslint-disable-next-line no-console
+      console.log(...args);
+    }
+  }
+
   const handleAddTag = () => {
     if (newTag.trim() && !formData.keywords?.includes(newTag.trim())) {
       setFormData(prev => ({
@@ -51,6 +59,11 @@ export default function AddMemorabilia() {
         keywords: [...(prev.keywords || []), newTag.trim()]
       }));
       setNewTag('');
+      logIfEnabled('Tag added:', newTag.trim());
+      setTimeout(() => {
+        alert('Tag added!');
+        logIfEnabled('Tag add message shown');
+      }, 300);
     }
   };
 
@@ -59,26 +72,31 @@ export default function AddMemorabilia() {
       ...prev,
       keywords: (prev.keywords || []).filter(tag => tag !== tagToRemove)
     }));
+    logIfEnabled('Tag removed:', tagToRemove);
+    setTimeout(() => {
+      alert('Tag removed!');
+      logIfEnabled('Tag remove message shown');
+    }, 300);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
       alert('Title is required.');
-      console.log('Memorabilia create failed: Title is required');
+      logIfEnabled('Memorabilia create failed: Title is required');
       return;
     }
     try {
       const res = await createMemorabilia(formData);
-      console.log('Memorabilia created:', res);
+      logIfEnabled('Memorabilia created:', res);
       alert('Memorabilia created successfully!');
       setTimeout(() => {
         alert('Saved! Your memorabilia was added.');
-        console.log('Memorabilia save message shown');
+        logIfEnabled('Memorabilia save message shown');
       }, 500);
       navigate('/admin/memorabilia');
     } catch (error) {
-      console.error('Create memorabilia error:', error);
+      logIfEnabled('Create memorabilia error:', error);
       alert('Failed to create memorabilia.');
     }
   };

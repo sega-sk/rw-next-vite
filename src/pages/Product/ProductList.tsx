@@ -15,6 +15,14 @@ import type { Merchandise, MerchandiseCreate, MerchandiseUpdate } from '../../se
 import Tooltip from '../../components/UI/Tooltip';
 import OptimizedImage from '../../components/UI/OptimizedImage';
 
+// Helper for conditional logging
+function logIfEnabled(...args: any[]) {
+  if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+    // eslint-disable-next-line no-console
+    console.log(...args);
+  }
+}
+
 export default function MerchandiseList() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -96,7 +104,7 @@ export default function MerchandiseList() {
       slug: item.slug || '',
     });
     setShowEditModal(true);
-    console.log('Edit product:', item);
+    logIfEnabled('Edit product:', item);
   };
 
   const handleDelete = async (itemId: string) => {
@@ -104,16 +112,16 @@ export default function MerchandiseList() {
       try {
         await deleteMerchandise(itemId);
         success('Product Deleted', 'Product has been deleted successfully!');
-        console.log('Product deleted:', itemId);
+        logIfEnabled('Product deleted:', itemId);
         apiService.clearCache?.('product-list-'); // clear cache after delete
         refetchMerchandise();
         setTimeout(() => {
           alert('Product deleted!');
-          console.log('Product delete message shown');
+          logIfEnabled('Product delete message shown');
         }, 500);
       } catch (err) {
         error('Delete Failed', 'Failed to delete product.');
-        console.error('Delete product error:', err);
+        logIfEnabled('Delete product error:', err);
       }
     }
   };
@@ -125,6 +133,11 @@ export default function MerchandiseList() {
         keywords: [...prev.keywords, newTag.trim()]
       }));
       setNewTag('');
+      logIfEnabled('Tag added:', newTag.trim());
+      setTimeout(() => {
+        alert('Tag added!');
+        logIfEnabled('Tag add message shown');
+      }, 300);
     }
   };
 
@@ -133,6 +146,11 @@ export default function MerchandiseList() {
       ...prev,
       keywords: prev.keywords.filter(tag => tag !== tagToRemove)
     }));
+    logIfEnabled('Tag removed:', tagToRemove);
+    setTimeout(() => {
+      alert('Tag removed!');
+      logIfEnabled('Tag remove message shown');
+    }, 300);
   };
 
   const handleSaveItem = async (e: React.FormEvent) => {
@@ -140,13 +158,13 @@ export default function MerchandiseList() {
 
     if (!isAuthenticated) {
       alert('Please login to save merchandise');
-      console.log('Save failed: not authenticated');
+      logIfEnabled('Save failed: not authenticated');
       return;
     }
 
     if (!formData.title.trim() || !formData.price.toString().trim()) {
       alert('Title and price are required.');
-      console.log('Save failed: Title and price required');
+      logIfEnabled('Save failed: Title and price required');
       return;
     }
 
@@ -162,10 +180,10 @@ export default function MerchandiseList() {
           },
         });
         success('Product updated!', 'Product updated successfully!');
-        console.log('Product updated:', selectedItem.id);
+        logIfEnabled('Product updated:', selectedItem.id);
         setTimeout(() => {
           alert('Product updated!');
-          console.log('Product update message shown');
+          logIfEnabled('Product update message shown');
         }, 500);
       } else {
         await createMerchandise({
@@ -175,10 +193,10 @@ export default function MerchandiseList() {
             : [],
         });
         success('Product created!', 'Product created successfully!');
-        console.log('Product created:', formData.title);
+        logIfEnabled('Product created:', formData.title);
         setTimeout(() => {
           alert('Product created!');
-          console.log('Product create message shown');
+          logIfEnabled('Product create message shown');
         }, 500);
       }
 
@@ -199,11 +217,11 @@ export default function MerchandiseList() {
     } catch (err: any) {
       if (err instanceof Error && err.message.includes('Authentication')) {
         alert('Authentication expired. Please login again.');
-        console.log('Save failed: authentication expired');
+        logIfEnabled('Save failed: authentication expired');
         window.location.href = '/admin/login';
       } else {
         error('Save Failed', 'Failed to save merchandise. Please try again.');
-        console.error('Save merchandise error:', err);
+        logIfEnabled('Save merchandise error:', err);
       }
     }
   };

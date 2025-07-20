@@ -12,6 +12,7 @@ import WebsiteFooter from '../../components/Website/WebsiteFooter';
 import SEOHead from '../../components/UI/SEOHead';
 import NotificationBanner from '../../components/UI/NotificationBanner';
 import { useNotification } from '../../hooks/useNotification';
+import { formatPriceWithSale } from '../../utils/priceUtils';
 
 export default function ProductDetailPage() {
   const { productType, slug } = useParams();
@@ -100,6 +101,17 @@ export default function ProductDetailPage() {
     return product.product_types?.[0] || 'vehicle';
   }
 
+  // Error fallback: show maintenance message if fatal error
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (typeof currentProduct === 'undefined' && !loading) {
+      setHasError(true);
+    } else {
+      setHasError(false);
+    }
+  }, [currentProduct, loading]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
@@ -110,6 +122,30 @@ export default function ProductDetailPage() {
         />
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <WebsiteHeader 
+          onSearchClick={() => setShowSearchModal(true)}
+          variant="dark"
+          className="product-detail-header"
+        />
+        <div className="flex flex-col items-center justify-center h-96">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">We're Performing Maintenance</h1>
+          <p className="text-gray-600 mb-6 max-w-xl text-center">
+            Our product page is temporarily unavailable while we perform some updates. Please check back soon or contact us if you need assistance.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );

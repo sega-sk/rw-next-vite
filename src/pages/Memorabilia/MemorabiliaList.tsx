@@ -11,6 +11,14 @@ import { useApi, useMutation } from '../../hooks/useApi';
 import { useToastContext } from '../../contexts/ToastContext';
 import type { Memorabilia } from '../../services/api';
 
+// Helper for conditional logging
+function logIfEnabled(...args: any[]) {
+  if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+    // eslint-disable-next-line no-console
+    console.log(...args);
+  }
+}
+
 export default function MemorabiliaList() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -37,7 +45,7 @@ export default function MemorabiliaList() {
   }, [searchTerm, refetchMemorabilia]);
 
   const handleEdit = (item: Memorabilia) => {
-    console.log('Editing memorabilia:', item);
+    logIfEnabled('Editing memorabilia:', item);
     navigate(`/admin/memorabilia/edit/${item.id}`);
   };
 
@@ -45,15 +53,15 @@ export default function MemorabiliaList() {
     if (window.confirm('Are you sure you want to delete this memorabilia item?')) {
       try {
         await deleteMemorabilia(itemId);
-        console.log('Memorabilia deleted:', itemId);
+        logIfEnabled('Memorabilia deleted:', itemId);
         success('Memorabilia Deleted', 'Memorabilia item has been deleted successfully!');
         setTimeout(() => {
           success('Deleted!', 'The item was removed from the list.');
-          console.log('Memorabilia delete message shown');
+          logIfEnabled('Memorabilia delete message shown');
         }, 500);
         refetchMemorabilia();
       } catch (err) {
-        console.error('Delete memorabilia error:', err);
+        logIfEnabled('Delete memorabilia error:', err);
         error('Delete Failed', 'Failed to delete memorabilia.');
       }
     }

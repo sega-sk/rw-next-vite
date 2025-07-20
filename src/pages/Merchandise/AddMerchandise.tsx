@@ -45,6 +45,14 @@ export default function AddMerchandise() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Helper for conditional logging
+  function logIfEnabled(...args: any[]) {
+    if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+      // eslint-disable-next-line no-console
+      console.log(...args);
+    }
+  }
+
   const handleAddTag = () => {
     if (newTag.trim() && !formData.keywords.includes(newTag.trim())) {
       setFormData(prev => ({
@@ -52,10 +60,10 @@ export default function AddMerchandise() {
         keywords: [...prev.keywords, newTag.trim()]
       }));
       setNewTag('');
-      console.log('Tag added:', newTag.trim());
+      logIfEnabled('Tag added:', newTag.trim());
       setTimeout(() => {
         alert('Tag added!');
-        console.log('Tag add message shown');
+        logIfEnabled('Tag add message shown');
       }, 300);
     }
   };
@@ -65,10 +73,10 @@ export default function AddMerchandise() {
       ...prev,
       keywords: prev.keywords.filter(tag => tag !== tagToRemove)
     }));
-    console.log('Tag removed:', tagToRemove);
+    logIfEnabled('Tag removed:', tagToRemove);
     setTimeout(() => {
       alert('Tag removed!');
-      console.log('Tag remove message shown');
+      logIfEnabled('Tag remove message shown');
     }, 300);
   };
 
@@ -76,20 +84,20 @@ export default function AddMerchandise() {
     e.preventDefault();
     if (!formData.title.trim() || !formData.price.toString().trim()) {
       alert('Title and price are required.');
-      console.log('Merchandise create failed: Title and price required');
+      logIfEnabled('Merchandise create failed: Title and price required');
       return;
     }
     try {
       const res = await createMerchandise(formData);
-      console.log('Merchandise created:', res);
+      logIfEnabled('Merchandise created:', res);
       alert('Merchandise created successfully!');
       setTimeout(() => {
         alert('Saved! Your merchandise was added.');
-        console.log('Merchandise save message shown');
+        logIfEnabled('Merchandise save message shown');
       }, 500);
       navigate('/admin/merchandise');
     } catch (error) {
-      console.error('Create merchandise error:', error);
+      logIfEnabled('Create merchandise error:', error);
       alert('Failed to create merchandise.');
     }
   };

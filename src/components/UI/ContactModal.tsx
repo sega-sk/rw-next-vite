@@ -39,6 +39,14 @@ export default function ContactModal({
 
   const notify = externalShowNotification || showNotification;
 
+  // Helper for conditional logging
+  function logIfEnabled(...args: any[]) {
+    if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+      // eslint-disable-next-line no-console
+      console.log(...args);
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
@@ -66,6 +74,7 @@ export default function ContactModal({
     }
     setIsSubmitting(true);
     try {
+      // Send to API endpoint for product page form
       const response = await fetch(`/api/${apiSlug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,8 +85,18 @@ export default function ContactModal({
           formType: formData.mainOption === 'buy' ? 'contact_us' : 'rent_a_product'
         }),
       });
-      if (!response.ok) throw new Error('Failed');
-      console.log('Contact form submitted:', { ...formData, productTitle, productPrice });
+      if (!response.ok) throw new Error('Failed to send your request');
+      setFormData({
+        mainOption: '',
+        rentPeriod: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        comment: '',
+        consent: true
+      });
+      logIfEnabled('Contact form submitted:', { ...formData, productTitle, productPrice });
       if (formData.mainOption === 'buy') {
         notify('Purchase request submitted! The Dark Knight will contact you soon to finalize your Batmobile purchase.', 'success');
       } else {
@@ -88,7 +107,7 @@ export default function ContactModal({
       }, 800);
       onClose();
     } catch (err) {
-      console.error('Contact form error:', err);
+      logIfEnabled('Contact form error:', err);
       notify('Failed to send your request. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
