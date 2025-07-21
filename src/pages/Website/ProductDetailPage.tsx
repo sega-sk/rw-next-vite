@@ -116,8 +116,9 @@ export default function ProductDetailPage() {
 
   // Helper to determine if price should be shown
   function shouldShowPrice(product) {
-    const price = parseFloat(product.retail_price || product.price || '0');
-    return !isNaN(price) && price >= 1000;
+    // Use our utility function instead
+    const priceInfo = formatPriceWithSale(product.retail_price, product.sale_price);
+    return !priceInfo.isCallForPrice;
   }
 
   // Helper to get product type for navigation

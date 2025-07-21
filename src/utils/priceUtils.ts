@@ -3,7 +3,8 @@
 export const formatPrice = (price: string | number | null | undefined): string => {
   // Handle null, undefined, or empty values
   if (price === null || price === undefined || price === '') {
-    return 'Call for Price';
+    //return 'Call for Price';
+    return '';
   }
 
   // Convert to number
@@ -32,6 +33,33 @@ export const shouldShowCallForPrice = (price: string | number | null | undefined
   return isNaN(numPrice) || numPrice === 0;
 };
 
+export const hasValidPrice = (price: string | number | null | undefined): boolean => {
+  if (price === null || price === undefined || price === '') {
+    return false;
+  }
+  
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return !isNaN(numPrice) && numPrice > 0;
+};
+
+export const shouldShowSaleBadge = (
+  retailPrice: string | number | null | undefined,
+  salePrice: string | number | null | undefined
+): boolean => {
+  // Both prices must be valid and sale price must be lower than retail
+  const hasValidRetail = hasValidPrice(retailPrice);
+  const hasValidSale = hasValidPrice(salePrice);
+  
+  if (!hasValidRetail || !hasValidSale) {
+    return false;
+  }
+  
+  const retail = typeof retailPrice === 'string' ? parseFloat(retailPrice) : retailPrice!;
+  const sale = typeof salePrice === 'string' ? parseFloat(salePrice) : salePrice!;
+  
+  return sale < retail && sale > 0;
+};
+
 export const formatPriceWithSale = (
   retailPrice: string | number | null | undefined,
   salePrice?: string | number | null | undefined
@@ -45,11 +73,11 @@ export const formatPriceWithSale = (
   const isRetailCallForPrice = shouldShowCallForPrice(retailPrice);
   const isSaleCallForPrice = shouldShowCallForPrice(salePrice);
   
-  // If both are call for price or sale price exists and is call for price
-  if (salePrice && !isSaleCallForPrice) {
+  // If we have a valid sale price that's lower than retail
+  if (shouldShowSaleBadge(retailPrice, salePrice)) {
     return {
       displayPrice: formatPrice(salePrice),
-      originalPrice: isRetailCallForPrice ? undefined : formatPrice(retailPrice),
+      originalPrice: formatPrice(retailPrice),
       isOnSale: true,
       isCallForPrice: false,
       shouldUseSmallFont: false

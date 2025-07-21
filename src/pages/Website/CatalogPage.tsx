@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, Heart, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatPriceWithSale } from '../../utils/priceUtils';
+import { formatPriceWithSale, shouldShowSaleBadge } from '../../utils/priceUtils';
 import { apiService } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
 import SearchModal from '../../components/Website/SearchModal';
@@ -33,6 +33,9 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
 
   // Ensure keywords is always an array
   const keywords = Array.isArray(product.keywords) ? product.keywords : [];
+
+  // Get price information using utility
+  const priceInfo = formatPriceWithSale(product.retail_price, product.sale_price);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -92,8 +95,8 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
           </div>
         )}
 
-        {/* Only show SALE badge if sale_price > 1000 */}
-        {product.sale_price && parseFloat(product.sale_price) > 1000 && (
+        {/* Show SALE badge only when there's a valid sale */}
+        {shouldShowSaleBadge(product.retail_price, product.sale_price) && (
           <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
             SALE
           </div>
@@ -117,6 +120,27 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
       <div className="p-4 md:p-6" onClick={() => onProductClick(product)}>
         <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{product.title}</h3>
         <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{product.subtitle}</p>
+        
+        {/* Price Display */}
+        <div className="mb-4">
+          {priceInfo.isCallForPrice ? (
+            <div className="call-for-price text-center">
+              Call for Price
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className={`font-bold ${priceInfo.isOnSale ? 'text-red-600' : 'text-gray-900'}`}>
+                {priceInfo.displayPrice}
+              </div>
+              {priceInfo.originalPrice && (
+                <div className="text-sm text-gray-500 line-through">
+                  {priceInfo.originalPrice}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
         <div className="flex items-center justify-between">
           <div /> {/* keep layout spacing */}
           <div className="flex items-center space-x-1">

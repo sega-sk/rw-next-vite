@@ -6,6 +6,7 @@ import WebsiteHeader from '../../components/Website/WebsiteHeader';
 import WebsiteFooter from '../../components/Website/WebsiteFooter';
 import OptimizedImage from '../../components/UI/OptimizedImage';
 import SEOHead from '../../components/UI/SEOHead';
+import { formatPrice } from '../../utils/priceUtils';
 
 export default function MerchandiseDetailPage() {
   const { slug } = useParams();
@@ -88,7 +89,7 @@ export default function MerchandiseDetailPage() {
             )}
 
             <div className="text-3xl font-bold text-green-600 mb-6">
-              ${item.price}
+              {formatPrice(item.price)}
             </div>
 
             {item.description && (
