@@ -42,24 +42,6 @@ export const hasValidPrice = (price: string | number | null | undefined): boolea
   return !isNaN(numPrice) && numPrice > 0;
 };
 
-export const shouldShowSaleBadge = (
-  retailPrice: string | number | null | undefined,
-  salePrice: string | number | null | undefined
-): boolean => {
-  // Both prices must be valid and sale price must be lower than retail
-  const hasValidRetail = hasValidPrice(retailPrice);
-  const hasValidSale = hasValidPrice(salePrice);
-  
-  if (!hasValidRetail || !hasValidSale) {
-    return false;
-  }
-  
-  const retail = typeof retailPrice === 'string' ? parseFloat(retailPrice) : retailPrice!;
-  const sale = typeof salePrice === 'string' ? parseFloat(salePrice) : salePrice!;
-  
-  return sale < retail && sale > 0;
-};
-
 export const formatPriceWithSale = (
   retailPrice: string | number | null | undefined,
   salePrice?: string | number | null | undefined
@@ -68,37 +50,45 @@ export const formatPriceWithSale = (
   originalPrice?: string;
   isOnSale: boolean;
   isCallForPrice: boolean;
-  shouldUseSmallFont?: boolean;
 } => {
-  const isRetailCallForPrice = shouldShowCallForPrice(retailPrice);
-  const isSaleCallForPrice = shouldShowCallForPrice(salePrice);
+  const hasRetailPrice = retailPrice && !isNaN(parseFloat(retailPrice.toString()));
+  const hasSalePrice = salePrice && !isNaN(parseFloat(salePrice.toString()));
   
-  // If we have a valid sale price that's lower than retail
-  if (shouldShowSaleBadge(retailPrice, salePrice)) {
+  if (!hasRetailPrice && !hasSalePrice) {
     return {
-      displayPrice: formatPrice(salePrice),
-      originalPrice: formatPrice(retailPrice),
-      isOnSale: true,
-      isCallForPrice: false,
-      shouldUseSmallFont: false
-    };
-  }
-  
-  // If retail price is call for price
-  if (isRetailCallForPrice) {
-    return {
-      displayPrice: false ? 'Call for Price' : '',
+      displayPrice: 'Call for Price',
       isOnSale: false,
-      isCallForPrice: true,
-      shouldUseSmallFont: true
+      isCallForPrice: true
     };
   }
   
-  // Regular retail price
+  if (hasSalePrice && hasRetailPrice) {
+    const saleNum = parseFloat(salePrice.toString());
+    const retailNum = parseFloat(retailPrice.toString());
+    
+    if (saleNum < retailNum) {
+      return {
+        displayPrice: formatPrice(salePrice),
+        originalPrice: formatPrice(retailPrice),
+        isOnSale: true,
+        isCallForPrice: false
+      };
+    }
+  }
+  
+  const priceToUse = hasSalePrice ? salePrice : retailPrice;
   return {
-    displayPrice: formatPrice(retailPrice),
+    displayPrice: formatPrice(priceToUse),
     isOnSale: false,
-    isCallForPrice: false,
-    shouldUseSmallFont: false
+    isCallForPrice: shouldShowCallForPrice(priceToUse)
   };
+};
+
+export const shouldShowSaleBadge = (retailPrice: string | number | null | undefined, salePrice?: string | number | null | undefined): boolean => {
+  if (!retailPrice || !salePrice) return false;
+  
+  const retailNum = parseFloat(retailPrice.toString());
+  const saleNum = parseFloat(salePrice.toString());
+  
+  return !isNaN(retailNum) && !isNaN(saleNum) && saleNum < retailNum;
 };
