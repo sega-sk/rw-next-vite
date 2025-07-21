@@ -1,11 +1,12 @@
-export async function sendLead(formData: any) {
-  const response = await fetch('/api/lead', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData),
-  });
-  if (!response.ok) {
+import { leadsService } from './leads';
+import type { LeadCreate } from './leads';
+
+export async function sendLead(formData: LeadCreate) {
+  try {
+    const result = await leadsService.submitLead(formData);
+    return result;
+  } catch (error) {
+    console.error('Lead service error:', error);
     throw new Error('Failed to send lead');
   }
-  return response.json();
 }

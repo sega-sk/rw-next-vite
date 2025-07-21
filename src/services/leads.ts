@@ -47,7 +47,7 @@ interface LeadsListResponse {
 
 class LeadsService {
   private readonly API_BASE_URL = 'https://reel-wheel-api-x92jj.ondigitalocean.app';
-  private readonly API_KEY = 'ff8c5b7d42cd8988d73b10098a50b0e6c94afb83c4dc1e4d30a6f5b88b2b4f47';
+  private readonly API_KEY = import.meta.env.VITE_LEADS_API_KEY;
 
   // Submit a new lead directly to API (public endpoint with API key)
   async submitLead(data: LeadCreate): Promise<Lead> {

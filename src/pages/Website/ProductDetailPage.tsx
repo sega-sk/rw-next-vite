@@ -594,7 +594,8 @@ export default function ProductDetailPage() {
         onClose={() => setShowContactModal(false)}
         productTitle={currentProduct.title}
         productPrice={priceInfo.displayPrice}
-        productImage={images[0]} // Add the first product image
+        productImage={images[0]}
+        productId={currentProduct.id} // Pass the actual product ID
         apiSlug="rent_a_product"
         showNotification={showNotification}
       />

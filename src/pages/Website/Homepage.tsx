@@ -10,6 +10,7 @@ import ContactModal from '../../components/UI/ContactModal';
 import SearchModal from '../../components/Website/SearchModal';
 import NotificationBanner from '../../components/UI/NotificationBanner';
 import { useNotification } from '../../hooks/useNotification';
+import { leadsService } from '../../services/leads';
 
 // Homepage component - Enhanced by SeGa_cc
 export default function Homepage() {
@@ -34,8 +35,21 @@ export default function Homepage() {
     e.preventDefault();
     setIsSubmittingContact(true);
     try {
-      // ...sendLead logic here if needed...
-      showNotification('Thank you for contacting us!', 'success');
+      // Use the leads service with proper API structure
+      const leadData = {
+        form_slug: 'contact_us' as const,
+        appendices: {
+          first_name: contactFormData.firstName,
+          last_name: contactFormData.lastName,
+          email: contactFormData.email,
+          phone_number: contactFormData.phone,
+          comments: contactFormData.comments || 'General inquiry from homepage contact form'
+        }
+      };
+
+      await leadsService.submitLead(leadData);
+      
+      showNotification('Thank you for contacting us! We will be in touch soon.', 'success');
       setContactFormData({
         firstName: '',
         lastName: '',
@@ -45,7 +59,9 @@ export default function Homepage() {
       });
       setShowContactModal(false);
     } catch (err) {
-      showNotification('Failed to send your message. Please try again.', 'error');
+      console.error('Contact form submission error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send your message. Please try again.';
+      showNotification(errorMessage, 'error');
     } finally {
       setIsSubmittingContact(false);
     }

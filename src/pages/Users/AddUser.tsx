@@ -103,12 +103,3 @@ export default function AddUser() {
     </div>
   );
 }
-
-// This file is already a standalone page for adding a user.
-        </div>
-      </form>
-    </div>
-  );
-}
-
-// This file is already a standalone page for adding a user.
