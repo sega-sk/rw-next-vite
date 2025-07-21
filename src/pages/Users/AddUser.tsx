@@ -33,13 +33,19 @@ export default function AddUser() {
     }
     setIsSubmitting(true);
     try {
-      await apiService.createUser(formData);
+      // Check if createUser method exists
+      if (apiService.createUser) {
+        await apiService.createUser(formData);
+      } else {
+        // Show warning that this is demo mode
+        setAlert({ type: 'error', message: 'User management API is not available in demo mode.' });
+        return;
+      }
+      
       setAlert({ type: 'success', message: 'User created successfully!' });
       console.log('User created:', formData.email);
       setTimeout(() => {
         navigate('/admin/users');
-        alert('User created!');
-        console.log('User create message shown');
       }, 1200);
     } catch (err: any) {
       setAlert({ type: 'error', message: err?.message || 'Failed to create user. Please try again.' });
