@@ -70,7 +70,7 @@ const preloadCriticalResources = () => {
 };
 
 // Client-side Cache Busting
-const BUILD_VERSION = '2025-07-21-1'; // Update this on each deploy
+const BUILD_VERSION = '2025-07-21-5'; // Update this on each deploy
 
 if (localStorage.getItem('build-version') !== BUILD_VERSION) {
   localStorage.clear();
