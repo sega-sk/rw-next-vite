@@ -26,10 +26,15 @@ export default function MemorabiliaList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
-  // API hooks
+  // API hooks - Updated to refresh every 15 seconds
   const { data: memorabiliaData, loading, execute: refetchMemorabilia } = useApi(
     () => apiService.getMemorabilia({ q: searchTerm, limit: 100 }),
-    { immediate: true, cacheKey: `memorabilia-list-${searchTerm}`, cacheTTL: 2 * 60 * 1000, staleWhileRevalidate: true }
+    { 
+      immediate: true, 
+      cacheKey: `memorabilia-list-${searchTerm}`, 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   const { mutate: deleteMemorabilia, loading: deleting } = useMutation(

@@ -43,8 +43,13 @@ export default function EditMerchandise() {
   );
 
   const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 1000 }),
-    { immediate: true, cacheKey: 'merch-edit-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+    () => apiService.getProducts({ limit: 100 }),
+    { 
+      immediate: true, 
+      cacheKey: 'merch-edit-all-products', 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   // Load merchandise data when editing
@@ -174,6 +179,14 @@ export default function EditMerchandise() {
             </div>
           </div>
         </FormField>
+        <FormField label="Description">
+          <Textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            rows={4}
+          />
+        </FormField>
         <FormField label="Related Products">
           <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
             {paginatedProducts.map((product) => (
@@ -213,14 +226,6 @@ export default function EditMerchandise() {
               </div>
             )}
           </div>
-        </FormField>
-        <FormField label="Description">
-          <Textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={4}
-          />
         </FormField>
         <div className="flex justify-end space-x-4">
           <Button variant="outline" type="button" onClick={() => navigate('/admin/merchandise')}>

@@ -19,13 +19,13 @@ export default function Dashboard() {
 
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
 
-  // Fetch dashboard data
+  // Fetch dashboard data - Updated to refresh every 15 seconds
   const { data: productsData, loading: productsLoading } = useApi(
     () => isAuthenticated ? apiService.getProducts({ limit: 10, sort: '-created_at' }) : Promise.resolve({ rows: [], total: 0, offset: 0 }),
     { 
       immediate: isAuthenticated,
       cacheKey: 'dashboard-products',
-      cacheTTL: 1 * 60 * 1000, // 1 minute for dashboard to get fresh data
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
@@ -35,7 +35,7 @@ export default function Dashboard() {
     { 
       immediate: isAuthenticated,
       cacheKey: 'dashboard-memorabilia',
-      cacheTTL: 1 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
@@ -45,18 +45,18 @@ export default function Dashboard() {
     { 
       immediate: isAuthenticated,
       cacheKey: 'dashboard-merchandise',
-      cacheTTL: 1 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
 
-  // Fetch leads data (admin only)
+  // Fetch leads data (admin only) - Updated to refresh every 15 seconds
   const { data: leadsData, loading: leadsLoading } = useApi(
     () => isAuthenticated && user?.role === 'admin' ? leadsService.getLeads({ limit: 5 }) : Promise.resolve({ rows: [], total: 0, offset: 0 }),
     { 
       immediate: isAuthenticated && user?.role === 'admin',
       cacheKey: 'dashboard-leads',
-      cacheTTL: 1 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );

@@ -722,13 +722,6 @@ function ThumbnailSlider({
             <ChevronRight className="h-4 w-4 text-gray-600" />
           </button>
         )}
-        <button
-            onClick={() => onImageClick(0)}
-            className="open-gallery-adds-btn"
-            title="Open gallery"
-          >
-            Open Gallery
-          </button>
       </div>
       
       {/* Image Counter */}

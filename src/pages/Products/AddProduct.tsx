@@ -93,11 +93,20 @@ function getBgRemoveCount(productId: string): number {
   const key = `bgRemoveCount:${productId}`;
   return Number(localStorage.getItem(key) || '0');
 }
+
 function incrementBgRemoveCount(productId: string) {
   if (!productId) return;
   const key = `bgRemoveCount:${productId}`;
   const count = getBgRemoveCount(productId) + 1;
   localStorage.setItem(key, String(count));
+}
+
+// Helper for conditional logging
+function logIfEnabled(...args: any[]) {
+  if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
+    // eslint-disable-next-line no-console
+    console.log(...args);
+  }
 }
 
 export default function AddProduct() {
@@ -150,23 +159,62 @@ export default function AddProduct() {
   const [bgRemoveError, setBgRemoveError] = useState('');
   const [bgRemoveCount, setBgRemoveCount] = useState(0);
 
-  // Track background removal count for this product
-  useEffect(() => {
-    if (isEditing && editProduct?.id) {
-      setBgRemoveCount(getBgRemoveCount(editProduct.id));
-    }
-  }, [isEditing, editProduct?.id]);
-
   // Fetch product data for editing
   const { data: editProduct, loading: loadingProduct } = useApi(
     () => editProductId ? apiService.getProduct(editProductId) : Promise.resolve(null),
     { 
       immediate: !!editProductId,
       cacheKey: `edit-product-${editProductId}`,
-      cacheTTL: 2 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
+
+  // API hooks - Updated to refresh every 15 seconds
+  const { data: memorabiliaData } = useApi(
+    () => apiService.getMemorabilia({ limit: 100 }),
+    { 
+      immediate: true,
+      cacheKey: 'add-product-memorabilia',
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true
+    }
+  );
+
+  const { data: merchandiseData } = useApi(
+    () => apiService.getMerchandise({ limit: 100 }),
+    { 
+      immediate: true,
+      cacheKey: 'add-product-merchandise',
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true
+    }
+  );
+
+  const { data: allProductsData } = useApi(
+    () => apiService.getProducts({ limit: 100 }),
+    { 
+      immediate: true, 
+      cacheKey: 'add-product-all-products', 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
+  );
+
+  const { mutate: createProduct, loading: creating } = useMutation(
+    (data: ProductCreate) => apiService.createProduct(data)
+  );
+  
+  const { mutate: updateProduct, loading: updating } = useMutation(
+    ({ id, data }: { id: string; data: ProductCreate }) => apiService.updateProduct(id, data)
+  );
+
+  // Track background removal count for this product
+  useEffect(() => {
+    if (isEditing && editProduct?.id) {
+      setBgRemoveCount(getBgRemoveCount(editProduct.id));
+    }
+  }, [isEditing, editProduct?.id]);
 
   // Load product data when editing
   useEffect(() => {
@@ -208,45 +256,6 @@ export default function AddProduct() {
       }
     }
   }, [isEditing, editProduct]);
-
-  // API hooks - Fix the product loading issue
-  const { data: memorabiliaData } = useApi(
-    () => apiService.getMemorabilia({ limit: 100 }),
-    { 
-      immediate: true,
-      cacheKey: 'add-product-memorabilia',
-      cacheTTL: 1 * 60 * 1000,
-      staleWhileRevalidate: true
-    }
-  );
-
-  const { data: merchandiseData } = useApi(
-    () => apiService.getMerchandise({ limit: 100 }),
-    { 
-      immediate: true,
-      cacheKey: 'add-product-merchandise',
-      cacheTTL: 1 * 60 * 1000,
-      staleWhileRevalidate: true
-    }
-  );
-
-  const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 100 }),
-    { 
-      immediate: true, 
-      cacheKey: 'add-product-all-products', 
-      cacheTTL: 1 * 60 * 1000, 
-      staleWhileRevalidate: true 
-    }
-  );
-
-  const { mutate: createProduct, loading: creating } = useMutation(
-    (data: ProductCreate) => apiService.createProduct(data)
-  );
-  
-  const { mutate: updateProduct, loading: updating } = useMutation(
-    ({ id, data }: { id: string; data: ProductCreate }) => apiService.updateProduct(id, data)
-  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -294,14 +303,6 @@ export default function AddProduct() {
       }));
     }
   };
-
-  // Helper for conditional logging
-  function logIfEnabled(...args: any[]) {
-    if (typeof window !== 'undefined' && window.location.search.includes('logs')) {
-      // eslint-disable-next-line no-console
-      console.log(...args);
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

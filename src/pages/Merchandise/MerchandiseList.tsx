@@ -17,10 +17,15 @@ export default function MerchandiseList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
-  // API hooks
+  // API hooks - Updated to refresh every 15 seconds
   const { data: merchandiseData, loading, execute: refetchMerchandise } = useApi(
     () => apiService.getMerchandise({ q: searchTerm, limit: 100 }),
-    { immediate: true, cacheKey: `merchandise-list-${searchTerm}`, cacheTTL: 2 * 60 * 1000, staleWhileRevalidate: true }
+    { 
+      immediate: true, 
+      cacheKey: `merchandise-list-${searchTerm}`, 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   const { mutate: deleteMerchandise, loading: deleting } = useMutation(

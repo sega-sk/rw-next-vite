@@ -29,7 +29,7 @@ export default function ProductList() {
   const [showAllItems, setShowAllItems] = useState(false);
   const itemsPerPage = 10;
 
-  // Fetch products from API
+  // Fetch products from API - Updated to refresh every 15 seconds
   const { data: productsData, loading, execute: refetchProducts } = useApi(
     () => apiService.getProducts({
       q: searchTerm,
@@ -39,7 +39,7 @@ export default function ProductList() {
     { 
       immediate: true,
       cacheKey: `product-list-${searchTerm}-${sortBy}`,
-      cacheTTL: 2 * 60 * 1000, // 2 minutes for admin data
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );

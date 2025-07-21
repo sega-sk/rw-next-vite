@@ -45,20 +45,25 @@ export default function MerchandiseList() {
     slug: '',
   });
 
-  // API hooks
+  // API hooks - Updated to refresh every 15 seconds
   const { data: merchandiseData, loading, execute: refetchMerchandise } = useApi(
     () => apiService.getMerchandise({ q: searchTerm, limit: 100 }),
     { 
       immediate: true,
       cacheKey: `merchandise-list-${searchTerm}`,
-      cacheTTL: 2 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
 
   const { data: allProductsData } = useApi(
     () => apiService.getProducts({ limit: 100 }),
-    { immediate: true, cacheKey: 'merch-list-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+    { 
+      immediate: true, 
+      cacheKey: 'merch-list-all-products', 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   const { mutate: createMerchandise, loading: creating } = useMutation(

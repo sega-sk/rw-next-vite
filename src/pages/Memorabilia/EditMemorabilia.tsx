@@ -42,8 +42,13 @@ export default function EditMemorabilia() {
   );
 
   const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 1000 }),
-    { immediate: true, cacheKey: 'memo-edit-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+    () => apiService.getProducts({ limit: 100 }),
+    { 
+      immediate: true, 
+      cacheKey: 'memo-edit-all-products', 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   // Load memorabilia data when editing

@@ -50,7 +50,7 @@ export default function UsersList() {
     );
   }
 
-  // API hooks - Fixed to use apiClient instead of apiService
+  // API hooks - Updated to refresh every 15 seconds
   const { data: usersData, loading, execute: refetchUsers, error: apiError } = useApi(
     () => apiClient.listUsers({ 
       q: searchTerm, 
@@ -60,7 +60,7 @@ export default function UsersList() {
     { 
       immediate: true,
       cacheKey: `users-list-${searchTerm}`,
-      cacheTTL: 2 * 60 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
@@ -280,17 +280,6 @@ export default function UsersList() {
               className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
-        </div>
-        
-        {/* Debug info - remove in production */}
-        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
-          <strong>Debug Info:</strong><br />
-          API Response: {JSON.stringify({ 
-            hasData: !!usersData, 
-            rowsCount: usersData?.rows?.length || 0,
-            loading,
-            error: apiError?.message 
-          }, null, 2)}
         </div>
       </div>
 

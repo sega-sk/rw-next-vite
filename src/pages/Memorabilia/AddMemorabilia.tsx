@@ -25,7 +25,7 @@ export default function AddMemorabilia() {
     (data: MemorabiliaCreate) => apiService.createMemorabilia(data)
   );
   const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 1000 }),
+    () => apiService.getProducts({ limit: 100 }),
     { immediate: true, cacheKey: 'memo-add-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
   );
 

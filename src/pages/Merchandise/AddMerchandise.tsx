@@ -26,8 +26,13 @@ export default function AddMerchandise() {
     (data: MerchandiseCreate) => apiService.createMerchandise(data)
   );
   const { data: allProductsData } = useApi(
-    () => apiService.getProducts({ limit: 1000 }),
-    { immediate: true, cacheKey: 'merch-add-all-products', cacheTTL: 1 * 60 * 1000, staleWhileRevalidate: true }
+    () => apiService.getProducts({ limit: 100 }),
+    { 
+      immediate: true, 
+      cacheKey: 'merch-add-all-products', 
+      cacheTTL: 15 * 1000, // 15 seconds
+      staleWhileRevalidate: true 
+    }
   );
 
   // Pagination for related products

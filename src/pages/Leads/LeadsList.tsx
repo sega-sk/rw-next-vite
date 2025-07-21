@@ -34,7 +34,7 @@ export default function LeadsList() {
     );
   }
 
-  // API hooks
+  // API hooks - Updated to refresh every 15 seconds
   const { data: leadsData, loading, execute: refetchLeads } = useApi(
     () => leadsService.getLeads({ 
       search: searchTerm, 
@@ -44,7 +44,7 @@ export default function LeadsList() {
     { 
       immediate: true,
       cacheKey: `leads-list-${searchTerm}-${sortBy}`,
-      cacheTTL: 1 * 60 * 1000, // 1 minute for real-time data
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );

@@ -348,11 +348,11 @@ body .product-detail-main-slider {
 }
 
 .product-hero-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-
+  display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    padding: 8% 7% 14% 7% !important;
 }
 .product-hero-content h1 {
   color: #000 !important;
@@ -370,6 +370,10 @@ body .product-detail-main-slider {
     border: none;
     outline: none;
     border-radius: 0;
+}
+
+body .text-purple-700 {
+    color: #ca8a04
 }
 
 .product-thumbnails-wrapper {
@@ -552,6 +556,10 @@ html {
 
 .max-w-88vw-mode {
   max-width: 88vw !important;
+}
+.max-w-88vw-mode > .overflow-hidden {
+      overflow: auto !important;
+    scrollbar-width: none;
 }
 
 .product-page-content-wrapper {
@@ -1989,6 +1997,22 @@ button:disabled {
     height: 14px !important;
   }
 }
+
+.open-gallery-adds-btn {
+      position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    width: 100%;
+    transform: none !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(255, 255, 255, .7) !important;
+}
+
 
 /* Contact Modal Enhanced Styling */
 .contact-modal-product-card {
