@@ -158,6 +158,7 @@ export default function AddProduct() {
   const [bgRemoving, setBgRemoving] = useState(false);
   const [bgRemoveError, setBgRemoveError] = useState('');
   const [bgRemoveCount, setBgRemoveCount] = useState(0);
+  const [showImageReorder, setShowImageReorder] = useState(false); // Add toggle state
 
   // Fetch product data for editing
   const { data: editProduct, loading: loadingProduct } = useApi(
@@ -783,43 +784,79 @@ export default function AddProduct() {
           <div className="space-y-6">
             {/* Product Images */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Images</h3>
-              {/* --- Image Reorder UI --- */}
-              <div className="flex flex-wrap gap-4 mb-4">
-                {formData.images.map((img, idx) => (
-                  <div
-                    key={img + idx}
-                    draggable
-                    onDragStart={() => handleDragStart(idx)}
-                    onDragOver={e => handleDragOver(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative group border-2 rounded-lg p-1 bg-gray-50 ${draggedIndex === idx ? 'border-blue-500' : 'border-gray-200'}`}
-                    style={{ cursor: 'grab', width: 100, height: 80 }}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Product Images</h3>
+                {formData.images.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImageReorder(!showImageReorder)}
+                    className="flex items-center gap-2"
                   >
-                    <span className="absolute left-1 top-1 text-gray-400 cursor-move">
-                      <GripVertical size={16} />
-                    </span>
-                    <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover rounded" />
-                    {/* Remove button for each image */}
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600"
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        images: prev.images.filter((_, i) => i !== idx)
-                      }))}
-                      tabIndex={-1}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
+                    <GripVertical className="h-4 w-4" />
+                    {showImageReorder ? 'Hide Reorder' : 'Reorder Images'}
+                  </Button>
+                )}
               </div>
+
+              {/* --- Image Reorder UI --- */}
+              {showImageReorder && formData.images.length > 0 && (
+                <div className="mb-4 p-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+                  <div className="text-sm text-gray-600 mb-3 flex items-center gap-2">
+                    <GripVertical className="h-4 w-4" />
+                    Drag and drop to reorder images. The first image is used as the main product image.
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    {formData.images.map((img, idx) => (
+                      <div
+                        key={img + idx}
+                        draggable
+                        onDragStart={() => handleDragStart(idx)}
+                        onDragOver={e => handleDragOver(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        className={`relative group border-2 rounded-lg p-1 bg-white transition-all duration-200 ${
+                          draggedIndex === idx ? 'border-blue-500 shadow-lg scale-105' : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        style={{ cursor: 'grab', width: 120, height: 90 }}
+                      >
+                        <span className="absolute left-1 top-1 text-gray-400 cursor-move z-10">
+                          <GripVertical size={16} />
+                        </span>
+                        <OptimizedImage
+                          src={img}
+                          alt={`Product ${idx + 1}`}
+                          size="thumbnail"
+                          className="w-full h-full object-cover rounded"
+                        />
+                        {/* Image order number */}
+                        <div className="absolute bottom-1 right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {idx + 1}
+                        </div>
+                        {/* Remove button for each image */}
+                        <button
+                          type="button"
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            images: prev.images.filter((_, i) => i !== idx)
+                          }))}
+                          title="Remove image"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* --- End Image Reorder UI --- */}
+
               <ImageUploader
                 images={formData.images}
                 onImagesChange={images => setFormData(prev => ({ ...prev, images }))}
               />
+
               {/* --- Remove Background Action --- */}
               {formData.images[0] && (
                 <div className="mt-4 flex items-center gap-3 remove-background-action">
@@ -844,10 +881,6 @@ export default function AddProduct() {
                 </div>
               )}
               {/* --- End Remove Background Action --- */}
-              {/* Save reordered images info */}
-              <div className="mt-2 text-xs text-gray-500">
-                Drag and drop to reorder images. The first image is used as the main product image.
-              </div>
             </div>
 
             {/* Connected Memorabilia */}

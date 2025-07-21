@@ -253,7 +253,7 @@ export default function ProductDetailPage() {
                 <OptimizedImage
                   src={images[0]}
                   alt={currentProduct.title}
-                  size="main"
+                  size="fullscreen"
                   className="w-full h-auto object-cover cursor-pointer"
                   onClick={() => openGallery(0)}
                 />
@@ -293,7 +293,7 @@ export default function ProductDetailPage() {
               <OptimizedImage
                 src={images[galleryIndex]}
                 alt={`${currentProduct.title} ${galleryIndex + 1}`}
-                size="gallery"
+                size="fullscreen"
                 className="w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
               />
               <div className="mt-4 text-white text-sm">{galleryIndex + 1} / {images.length}</div>
