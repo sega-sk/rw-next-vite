@@ -10,6 +10,7 @@ interface ContactModalProps {
   onClose: () => void;
   productTitle?: string;
   productPrice?: string;
+  productImage?: string;
   apiSlug?: string;
   showNotification?: (msg: string, type?: any) => void;
 }
@@ -19,6 +20,7 @@ export default function ContactModal({
   onClose,
   productTitle = "2025 Wayne Enterprises Batmobile",
   productPrice = "Call for Price",
+  productImage = "/vdp hero (2).webp",
   apiSlug = "rent_a_product",
   showNotification: externalShowNotification,
 }: ContactModalProps) {
@@ -39,6 +41,13 @@ export default function ContactModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const notify = externalShowNotification || showNotification;
+
+  // Helper to determine if price should be shown
+  const shouldShowPrice = (price: string) => {
+    if (!price || price === 'Call for Price') return false;
+    const numericPrice = parseFloat(price.replace(/[^0-9.]/g, ''));
+    return !isNaN(numericPrice) && numericPrice > 1000;
+  };
 
   // Helper for conditional logging
   function logIfEnabled(...args: any[]) {
@@ -138,7 +147,7 @@ export default function ContactModal({
         aria-label="Close modal"
       />
       {/* Sidebar modal */}
-      <div className={`relative bg-white w-full max-w-md h-full ml-auto shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`relative bg-white w-full max-w-md h-full ml-auto shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         {notification && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md">
             <NotificationBanner
@@ -148,53 +157,78 @@ export default function ContactModal({
             />
           </div>
         )}
+        
         <button
           onClick={onClose}
-          className="absolute top-5 right-6 text-gray-400 hover:text-gray-600 text-2xl"
+          className="absolute top-5 right-6 text-gray-400 hover:text-gray-600 text-2xl z-10"
         >
           <X className="h-6 w-6" />
         </button>
+        
         <div className="p-6">
-          <h2 className="contact-modal-header text-2xl font-semibold text-gray-900 mb-4 font-inter">Get {productTitle.split(' ').pop()}</h2>
-          <div className="flex items-center gap-3 mb-6 p-3 bg-gray-50 rounded-lg">
-            <div className="w-16 h-12 bg-black rounded flex items-center justify-center">
-              <OptimizedImage
-                src="/logo.png"
-                alt="Product"
-                size="thumbnail"
-                className="w-full h-full object-contain"
-                fallback={<span className="text-yellow-500 text-xs font-bold">PRODUCT</span>}
-              />
+          <h2 className="contact-modal-header text-2xl font-semibold text-gray-900 mb-6 font-inter">
+            Get {productTitle.split(' ').slice(-1)[0]}
+          </h2>
+          
+          {/* Product Card */}
+          <div className="contact-modal-product-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mb-6 border border-gray-200 shadow-sm">
+            <div className="flex items-start gap-4">
+              {/* Product Image */}
+              <div className="w-20 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
+                <OptimizedImage
+                  src={productImage}
+                  alt={productTitle}
+                  size="thumbnail"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Product Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 font-inter text-sm leading-tight mb-1">
+                  {productTitle}
+                </h3>
+                
+                {/* Price Display */}
+                {shouldShowPrice(productPrice) ? (
+                  <div className="text-lg font-bold text-yellow-600 font-inter">
+                    {productPrice}
+                  </div>
+                ) : (
+                  <div className="text-lg font-bold text-yellow-600 font-inter call-for-price-modal">
+                    Call for Price
+                  </div>
+                )}
+                
+                <div className="text-xs text-gray-500 font-inter mt-1">
+                  Premium movie vehicle rental
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 font-inter">{productTitle}</h3>
-            </div>
-            <div className="text-lg font-bold text-gray-900 font-inter">{productPrice}</div>
-            {typeof productPrice === 'string' && productPrice === 'Call for Price' && (
-              <div className="text-xs text-gray-500 font-inter mt-1">Contact us for pricing details</div>
-            )}
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="contact-modal-form space-y-4">
+          
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="contact-modal-form space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-                  Select Option<span className="text-red-500 ml-1">*</span>
+                <label className="block text-sm font-semibold text-gray-700 mb-3 font-inter">
+                  What would you like to do?<span className="text-red-500 ml-1">*</span>
                 </label>
                 <select
                   name="mainOption"
                   value={formData.mainOption}
                   onChange={handleMainOptionChange}
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter text-gray-700 bg-white transition-all duration-200 hover:border-gray-300"
                 >
                   <option value="">Choose an option...</option>
-                  <option value="buy">Buy</option>
-                  <option value="rent">Rent</option>
+                  <option value="buy">💰 Purchase This Vehicle</option>
+                  <option value="rent">🎬 Rent for Event/Production</option>
                 </select>
               </div>
+              
               {formData.mainOption === 'rent' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
+                <div className="rental-period-section bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3 font-inter">
                     Rental Period<span className="text-red-500 ml-1">*</span>
                   </label>
                   <select
@@ -202,21 +236,22 @@ export default function ContactModal({
                     value={formData.rentPeriod}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                    className="w-full p-4 border-2 border-yellow-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter text-gray-700 bg-white transition-all duration-200"
                   >
                     <option value="">Choose rental period...</option>
-                    <option value="daily">Daily - $5,000/day</option>
-                    <option value="weekly">Weekly - $30,000/week</option>
-                    <option value="monthly">Monthly - $100,000/month</option>
-                    <option value="yearly">Yearly - $1,000,000/year</option>
+                    <option value="daily">📅 Daily - $5,000/day</option>
+                    <option value="weekly">📅 Weekly - $30,000/week</option>
+                    <option value="monthly">📅 Monthly - $100,000/month</option>
+                    <option value="yearly">📅 Yearly - $1,000,000/year</option>
                   </select>
                 </div>
               )}
+              
               {showCommonFields && (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-inter">
                         First Name<span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
@@ -225,12 +260,13 @@ export default function ContactModal({
                         value={formData.firstName}
                         onChange={handleInputChange}
                         required
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter transition-all duration-200 hover:border-gray-300"
+                        placeholder="John"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-                        Last Name
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 font-inter">
+                        Last Name<span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         type="text"
@@ -238,13 +274,15 @@ export default function ContactModal({
                         value={formData.lastName}
                         onChange={handleInputChange}
                         required
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter transition-all duration-200 hover:border-gray-300"
+                        placeholder="Doe"
                       />
                     </div>
                   </div>
+                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-                      Email<span className="text-red-500 ml-1">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 font-inter">
+                      Email Address<span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="email"
@@ -252,12 +290,14 @@ export default function ContactModal({
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter transition-all duration-200 hover:border-gray-300"
+                      placeholder="john@example.com"
                     />
                   </div>
+                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-                      Phone<span className="text-red-500 ml-1">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 font-inter">
+                      Phone Number<span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="tel"
@@ -265,43 +305,54 @@ export default function ContactModal({
                       value={formData.phone}
                       onChange={handleInputChange}
                       required
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter transition-all duration-200 hover:border-gray-300"
+                      placeholder="(555) 123-4567"
                     />
                   </div>
+                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-                      Comments
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 font-inter">
+                      Tell us about your event or inquiry
                     </label>
                     <textarea
                       name="comment"
-                      rows={3}
+                      rows={4}
                       value={formData.comment}
                       onChange={handleInputChange}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-inter"
-                      placeholder="Tell us about your event or inquiry..."
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 font-inter transition-all duration-200 hover:border-gray-300 resize-none"
+                      placeholder="Wedding, movie production, corporate event, private party..."
                     />
                   </div>
-                  <div className="flex items-center">
+                  
+                  <div className="flex items-start gap-3 bg-gray-50 p-4 rounded-xl">
                     <input
                       type="checkbox"
                       name="consent"
                       checked={formData.consent}
                       onChange={handleInputChange}
-                      className="mr-2"
+                      className="mt-1 w-4 h-4 text-yellow-600 border-2 border-gray-300 rounded focus:ring-yellow-500"
                       required
                     />
-                    <label className="text-sm text-gray-700 font-inter">
-                      I consent to being contacted about my inquiry.
+                    <label className="text-sm text-gray-700 font-inter leading-relaxed">
+                      I consent to being contacted about my inquiry and understand that Reel Wheels Experience will use my information to provide quotes and rental details.
                     </label>
                   </div>
                 </>
               )}
+              
               <button
                 type="submit"
-                className="w-full bg-yellow-600 text-white px-8 py-4 rounded-lg hover:bg-yellow-500 transition-colors font-inter font-medium text-lg"
+                className="contact-modal-submit-btn w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-8 py-4 rounded-xl transition-all duration-300 font-inter font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Sending..." : "SEND MESSAGE"}
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Sending...
+                  </div>
+                ) : (
+                  "🚀 SEND MESSAGE"
+                )}
               </button>
             </div>
           </form>

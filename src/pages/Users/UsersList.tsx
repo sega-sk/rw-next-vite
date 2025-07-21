@@ -8,10 +8,10 @@ import Modal from '../../components/UI/Modal';
 import FormField from '../../components/Forms/FormField';
 import Input from '../../components/Forms/Input';
 import Select from '../../components/Forms/Select';
-import { apiService } from '../../services/api';
+import { apiClient } from '../../lib/api-client';
 import { useApi, useMutation } from '../../hooks/useApi';
 import { useToastContext } from '../../contexts/ToastContext';
-import type { User as UserType, UserCreate, UserUpdate } from '../../services/api';
+import type { UserRead, UserCreate, UserUpdate } from '../../types/api';
 
 const roleOptions = [
   { value: '', label: 'Select Role' },
@@ -23,8 +23,9 @@ const roleOptions = [
 export default function UsersList() {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { success, error } = useToastContext();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserRead | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -49,9 +50,9 @@ export default function UsersList() {
     );
   }
 
-  // API hooks
-  const { data: usersData, loading, execute: refetchUsers } = useApi(
-    () => apiService.getUsers({ 
+  // API hooks - Fixed to use apiClient instead of apiService
+  const { data: usersData, loading, execute: refetchUsers, error: apiError } = useApi(
+    () => apiClient.listUsers({ 
       q: searchTerm, 
       limit: itemsPerPage * 10, // Get more for pagination
       sort: '-created_at' 
@@ -65,35 +66,43 @@ export default function UsersList() {
   );
 
   const { mutate: createUser, loading: creating } = useMutation(
-    (data: UserCreate) => apiService.createUser(data)
+    (data: UserCreate) => apiClient.createUser(data)
   );
 
   const { mutate: updateUser, loading: updating } = useMutation(
-    ({ id, data }: { id: string; data: UserUpdate }) => apiService.updateUser(id, data)
+    ({ id, data }: { id: string; data: UserUpdate }) => apiClient.updateUser(id, data)
   );
 
   const { mutate: deleteUser, loading: deleting } = useMutation(
-    (id: string) => apiService.deleteUser(id)
+    (id: string) => apiClient.deleteUser(id)
   );
 
-  // Search effect
+  // Search effect - Fixed debounce logic
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchTerm.trim()) {
-        refetchUsers();
-        setCurrentPage(1);
-      }
+      refetchUsers();
+      setCurrentPage(1);
     }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm, refetchUsers]);
+
+  // Debug logging to check API response
+  useEffect(() => {
+    console.log('Users API Response:', {
+      data: usersData,
+      loading,
+      error: apiError,
+      searchTerm
+    });
+  }, [usersData, loading, apiError, searchTerm]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEdit = (user: UserType) => {
+  const handleEdit = (user: UserRead) => {
     setSelectedUser(user);
     setFormData({
       email: user.email,
@@ -125,7 +134,7 @@ export default function UsersList() {
     e.preventDefault();
     
     if (!formData.email.trim()) {
-      alert('Email is required.');
+      error('Validation Error', 'Email is required.');
       return;
     }
     
@@ -187,7 +196,7 @@ export default function UsersList() {
     setSelectedUser(null);
   };
 
-  // Get users and apply pagination
+  // Get users and apply pagination - Fixed to handle API response structure
   const allUsers = usersData?.rows || [];
   const filteredUsers = allUsers.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -229,59 +238,21 @@ export default function UsersList() {
     }
   };
 
-  // Edit User Modal
-  const EditUserModal = () => (
-    <Modal
-      isOpen={isEditModalOpen}
-      onClose={handleCancel}
-      title="Edit User"
-      size="md"
-    >
-      <form className="space-y-6" onSubmit={handleSaveUser}>
-        <FormField label="Email Address" required>
-          <Input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
-        </FormField>
-
-        <FormField label="New Password">
-          <Input
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            placeholder="Leave blank to keep current password"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Leave blank to keep the current password
-          </p>
-        </FormField>
-
-        <FormField label="Role" required>
-          <Select
-            name="role"
-            value={formData.role}
-            onChange={handleInputChange}
-            options={roleOptions}
-            required
-          />
-        </FormField>
-
-        <div className="flex justify-end space-x-4">
-          <Button variant="outline" type="button" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" loading={updating}>
-            Save Changes
-          </Button>
+  // Show API error if there's one
+  if (apiError) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">API Error</h3>
+          <p className="text-red-600 mb-4">{apiError.message || 'Failed to load users'}</p>
+          <Button onClick={() => refetchUsers()}>Retry</Button>
+          <div className="mt-4 text-sm text-gray-500">
+            Check console for more details
+          </div>
         </div>
-      </form>
-    </Modal>
-  );
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -309,6 +280,17 @@ export default function UsersList() {
               className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
+        </div>
+        
+        {/* Debug info - remove in production */}
+        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
+          <strong>Debug Info:</strong><br />
+          API Response: {JSON.stringify({ 
+            hasData: !!usersData, 
+            rowsCount: usersData?.rows?.length || 0,
+            loading,
+            error: apiError?.message 
+          }, null, 2)}
         </div>
       </div>
 
@@ -350,7 +332,7 @@ export default function UsersList() {
                           <Mail className="h-4 w-4 mr-2 text-gray-400" />
                           {user.email}
                         </div>
-                        <div className="text-sm text-gray-500 hidden">ID: {user.id}</div>
+                        <div className="text-sm text-gray-500">ID: {user.id}</div>
                       </div>
                     </div>
                   </td>
@@ -398,9 +380,11 @@ export default function UsersList() {
           {filteredUsers.length === 0 && !loading && (
             <div className="text-center py-12">
               <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 text-lg">No users found.</p>
+              <p className="text-gray-500 text-lg">
+                {searchTerm ? `No users found matching "${searchTerm}"` : 'No users found.'}
+              </p>
               <Button 
-                onClick={() => setIsAddModalOpen(true)} 
+                onClick={() => navigate('/admin/users/add')} 
                 className="mt-4"
                 icon={Plus}
               >
@@ -477,7 +461,60 @@ export default function UsersList() {
         </div>
       )}
 
-      <EditUserModal />
+      {/* Edit User Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={handleCancel}
+        title={selectedUser ? "Edit User" : "Add User"}
+        size="md"
+      >
+        <form className="space-y-6" onSubmit={handleSaveUser}>
+          <FormField label="Email Address" required>
+            <Input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </FormField>
+
+          <FormField label={selectedUser ? "New Password" : "Password"} required={!selectedUser}>
+            <Input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required={!selectedUser}
+              placeholder={selectedUser ? "Leave blank to keep current password" : "Enter password"}
+            />
+            {selectedUser && (
+              <p className="text-xs text-gray-500 mt-1">
+                Leave blank to keep the current password
+              </p>
+            )}
+          </FormField>
+
+          <FormField label="Role" required>
+            <Select
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              options={roleOptions}
+              required
+            />
+          </FormField>
+
+          <div className="flex justify-end space-x-4">
+            <Button variant="outline" type="button" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={updating || creating}>
+              {selectedUser ? 'Save Changes' : 'Create User'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

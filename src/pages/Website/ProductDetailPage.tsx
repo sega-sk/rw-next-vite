@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, ArrowLeft, Heart } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, X, Play, Images } from 'lucide-react';
 import OptimizedImage from '../../components/UI/OptimizedImage';
 import { apiService } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
@@ -257,6 +257,16 @@ export default function ProductDetailPage() {
                   className="w-full h-auto object-cover cursor-pointer"
                   onClick={() => openGallery(0)}
                 />
+                
+                {/* Open Gallery Button */}
+                <button
+                  onClick={() => openGallery(0)}
+                  className="open-gallery-adds-btn absolute bottom-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg hover:bg-opacity-80 transition-all flex items-center gap-2 backdrop-blur-sm z-30"
+                  aria-label="Open image gallery"
+                >
+                  <Images className="h-4 w-4" />
+                  <span className="text-sm font-medium">Open Gallery</span>
+                </button>
               </div>
             </div>
           </div>
@@ -584,6 +594,7 @@ export default function ProductDetailPage() {
         onClose={() => setShowContactModal(false)}
         productTitle={currentProduct.title}
         productPrice={priceInfo.displayPrice}
+        productImage={images[0]} // Add the first product image
         apiSlug="rent_a_product"
         showNotification={showNotification}
       />
@@ -711,10 +722,17 @@ function ThumbnailSlider({
             <ChevronRight className="h-4 w-4 text-gray-600" />
           </button>
         )}
+        <button
+            onClick={() => onImageClick(0)}
+            className="open-gallery-adds-btn"
+            title="Open gallery"
+          >
+            Open Gallery
+          </button>
       </div>
       
       {/* Image Counter */}
-      <div className="text-center mt-3 text-sm text-gray-500 font-inter transition-opacity duration-300">
+      <div className="text-center text-sm text-gray-500 font-inter transition-opacity duration-300">
         {currentImageIndex + 1} of {images.length} images
       </div>
     </div>
