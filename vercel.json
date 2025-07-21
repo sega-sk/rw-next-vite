@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "app.js": {
-      "includeFiles": "public/**"
-    }
-  },
   "rewrites": [
     {
       "source": "/assets/(.*)",
