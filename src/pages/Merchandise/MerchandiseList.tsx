@@ -27,13 +27,15 @@ export default function MerchandiseList() {
     (id: string) => apiService.deleteMerchandise(id)
   );
 
-  // Search effect
+  // Search effect - only refresh when user stops typing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      refetchMerchandise();
-    }, 300);
+      if (searchTerm.trim() !== '') {
+        refetchMerchandise();
+      }
+    }, 500); // Increased debounce time
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, refetchMerchandise]);
+  }, [searchTerm]); // Removed refetchMerchandise dependency
 
   const handleEdit = (item: Merchandise) => {
     navigate(`/admin/merchandise/edit/${item.id}`);

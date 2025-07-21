@@ -36,13 +36,15 @@ export default function MemorabiliaList() {
     (id: string) => apiService.deleteMemorabilia(id)
   );
 
-  // Search effect
+  // Search effect - only refresh when user stops typing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      refetchMemorabilia();
-    }, 300);
+      if (searchTerm.trim() !== '') {
+        refetchMemorabilia();
+      }
+    }, 500); // Increased debounce time
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, refetchMemorabilia]);
+  }, [searchTerm]); // Removed refetchMemorabilia dependency
 
   const handleEdit = (item: Memorabilia) => {
     logIfEnabled('Editing memorabilia:', item);

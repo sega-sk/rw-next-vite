@@ -75,15 +75,15 @@ export default function ProductList() {
   const endIndex = startIndex + itemsPerPage;
   const currentProducts = showAllItems ? filteredProducts : filteredProducts.slice(startIndex, endIndex);
 
-  // Search effect
+  // Search effect - only refresh when user stops typing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      refetchProducts();
-      setCurrentPage(1); // Reset to first page when search changes
-    }, 300);
-
+      if (searchTerm.trim() !== '') {
+        refetchProducts();
+      }
+    }, 500); // Increased debounce time
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, sortBy]);
+  }, [searchTerm]); // Removed refetchProducts dependency
 
   // Navigation handlers
   const handleAddProduct = () => {

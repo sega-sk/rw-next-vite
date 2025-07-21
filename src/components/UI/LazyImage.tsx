@@ -15,7 +15,7 @@ interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 export default function LazyImage({ 
   src, 
   alt, 
-  placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+',
+  placeholder = '/vdp hero (2).webp',
   className = '',
   onLoad,
   onError,
@@ -27,7 +27,14 @@ export default function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+    setHasError(false);
+    setIsLoaded(false);
+  }, [src]);
 
   useEffect(() => {
     // Skip intersection observer for priority images
@@ -58,11 +65,17 @@ export default function LazyImage({
 
   const handleLoad = () => {
     setIsLoaded(true);
+    setHasError(false);
     onLoad?.();
   };
 
   const handleError = () => {
     setHasError(true);
+    if (currentSrc !== placeholder) {
+      setCurrentSrc(placeholder);
+    } else {
+      setIsLoaded(true);
+    }
     onError?.();
   };
 
@@ -76,7 +89,7 @@ export default function LazyImage({
       {/* Actual image */}
       {isInView && (
         <img
-          src={hasError ? placeholder : src}
+          src={currentSrc}
           alt={alt}
           width={width}
           height={height}

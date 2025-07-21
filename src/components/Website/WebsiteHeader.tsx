@@ -82,7 +82,8 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
               <button
                 onClick={onSearchClick}
                 className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Search"
+                aria-label="Search products"
+                title="Search products"
               >
                 <Search className="h-5 w-5" />
               </button>
@@ -90,6 +91,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
                 onClick={() => navigate('/favorites')}
                 className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
                 aria-label="Favorites"
+                title="View favorites"
               >
                 <Heart className="h-5 w-5" />
                 {favorites.length > 0 && (
@@ -105,7 +107,8 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
               <button
                 onClick={onSearchClick}
                 className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Search"
+                aria-label="Search products"
+                title="Search products"
               >
                 <Search className="h-5 w-5" />
               </button>
@@ -113,6 +116,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
                 onClick={() => navigate('/favorites')}
                 className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
                 aria-label="Favorites"
+                title="View favorites"
               >
                 <Heart className="h-5 w-5" />
                 {favorites.length > 0 && (

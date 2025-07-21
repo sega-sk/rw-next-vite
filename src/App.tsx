@@ -1,12 +1,6 @@
 /**
  * Reel Wheels Experience - Main App Component
  * Developed by SeGa_cc for DealerTower
- * 
- * Features:
- * - Movie vehicle rental platform
- * - Admin dashboard for inventory management
- * - Responsive design with optimized images
- * - Advanced caching and performance optimization
  */
 
 import React from 'react';
@@ -22,16 +16,14 @@ import AddProduct from './pages/Products/AddProduct';
 import ProductList from './pages/Products/ProductList';
 import MemorabiliaList from './pages/Memorabilia/MemorabiliaList';
 import AddMemorabilia from './pages/Memorabilia/AddMemorabilia';
+import EditMemorabilia from './pages/Memorabilia/EditMemorabilia';
 import MerchandiseList from './pages/Merchandise/MerchandiseList';
 import AddMerchandise from './pages/Merchandise/AddMerchandise';
+import EditMerchandise from './pages/Merchandise/EditMerchandise';
 import LeadsList from './pages/Leads/LeadsList';
 import ProfilePage from './pages/Profile/ProfilePage';
 import UsersList from './pages/Users/UsersList';
-import AddMemorabilia from './pages/Memorabilia/AddMemorabilia';
-import AddMerchandise from './pages/Merchandise/AddMerchandise';
 import AddUser from './pages/Users/AddUser';
-import EditMemorabilia from './pages/Memorabilia/EditMemorabilia';
-import EditMerchandise from './pages/Merchandise/EditMerchandise';
 
 // Main website components
 import Homepage from './pages/Website/Homepage';
@@ -82,30 +74,6 @@ function App() {
               </ProtectedRoute>
             } />
             
-            <Route path="/admin/memorabilia/add" element={
-              <ProtectedRoute>
-                <Layout title="Add Memorabilia" breadcrumb={['Dashboard', 'Add Memorabilia']}>
-                  <AddMemorabilia />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/merchandise/add" element={
-              <ProtectedRoute>
-                <Layout title="Add Merchandise" breadcrumb={['Dashboard', 'Add Merchandise']}>
-                  <AddMerchandise />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/users/add" element={
-              <ProtectedRoute>
-                <Layout title="Add User" breadcrumb={['Dashboard', 'Add User']}>
-                  <AddUser />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
             <Route path="/admin/products" element={
               <ProtectedRoute>
                 <Layout title="Add Product" breadcrumb={['Dashboard', 'Add Product']}>
@@ -132,6 +100,12 @@ function App() {
               </ProtectedRoute>
             } />
             
+            <Route path="/admin/memorabilia/edit/:id" element={
+              <ProtectedRoute>
+                <Layout title="Edit Memorabilia" breadcrumb={['Dashboard', 'Memorabilia', 'Edit']}><EditMemorabilia /></Layout>
+              </ProtectedRoute>
+            } />
+            
             <Route path="/admin/merchandise" element={
               <ProtectedRoute>
                 <Layout title="Merchandise" breadcrumb={['Dashboard', 'Merchandise']}><MerchandiseList /></Layout>
@@ -141,6 +115,12 @@ function App() {
             <Route path="/admin/merchandise/add" element={
               <ProtectedRoute>
                 <Layout title="Add Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Add']}><AddMerchandise /></Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/merchandise/edit/:id" element={
+              <ProtectedRoute>
+                <Layout title="Edit Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Edit']}><EditMerchandise /></Layout>
               </ProtectedRoute>
             } />
             
@@ -159,6 +139,12 @@ function App() {
             <Route path="/admin/users" element={
               <ProtectedRoute>
                 <Layout title="User Management" breadcrumb={['Dashboard', 'Users']}><UsersList /></Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/users/add" element={
+              <ProtectedRoute>
+                <Layout title="Add User" breadcrumb={['Dashboard', 'Users', 'Add']}><AddUser /></Layout>
               </ProtectedRoute>
             } />
             

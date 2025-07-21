@@ -124,21 +124,32 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <div
                   key={product.id}
                   onClick={() => handleProductClick(product)}
-                  role="listitem"
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors border border-gray-700 hover:border-gray-600"
+                  className="flex items-center space-x-4 p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
                 >
-                  <OptimizedImage
-                    src={product.images?.[0] || '/vdp hero (2).webp'}
-                    alt={product.title}
-                    size="thumbnail"
-                    className="w-12 h-12 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-white font-inter">{product.title}</h4>
-                    <p className="text-sm text-gray-400 font-inter">{product.subtitle}</p>
+                  <div className="flex-shrink-0">
+                    <OptimizedImage
+                      src={product.images?.[0] || '/vdp hero (2).webp'}
+                      alt={product.title}
+                      size="thumbnail"
+                      className="w-16 h-12 object-cover rounded"
+                    />
                   </div>
-                  <div className="text-sm text-gray-500 font-inter">
-                    {(product.product_types || []).join(', ')}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                      {product.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 truncate">
+                      {product.subtitle}
+                    </p>
+                    {product.product_types?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {product.product_types.slice(0, 2).map((type, idx) => (
+                          <span key={idx} className="px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

@@ -22,9 +22,6 @@ html, body {
   box-sizing: inherit;
 }
 
-/* Import Google Fonts */
-/* Fonts are now loaded in HTML head for better performance */
-
 /* Set default font family */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -41,18 +38,7 @@ body {
   font-family: 'Bebas Neue', 'Arial Black', cursive;
 }
 
-/* Ensure fonts load properly */
-@font-face {
-  font-family: 'Inter';
-  font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-}
-
-@font-face {
-  font-family: 'Bebas Neue';
-  font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-}
+/* Remove problematic @font-face declarations that conflict with Google Fonts */
 
 /* Fix any potential CSS conflicts */
 .bg-white {

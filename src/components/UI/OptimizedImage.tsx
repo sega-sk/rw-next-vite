@@ -1,11 +1,12 @@
 // Optimized Image component with fallback support and loading states
 
 import React, { useState, useEffect } from 'react';
+import encryptedLoader, { IMAGE_SIZES } from '../../utils/imageOptimization';
 
 interface OptimizedImageProps {
   src: string;
   alt: string;
-  size?: 'thumbnail' | 'small' | 'medium' | 'large' | 'main' | 'card' | 'gallery';
+  size?: keyof typeof IMAGE_SIZES;
   className?: string;
   onClick?: () => void;
   priority?: boolean;
@@ -21,60 +22,71 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false,
   loading = 'lazy'
 }) => {
+  const [optimizedSrc, setOptimizedSrc] = useState<string>(src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Size mappings for responsive images
-  const sizeConfigs = {
-    thumbnail: { width: 80, height: 80, quality: 75 },
-    small: { width: 200, height: 200, quality: 80 },
-    medium: { width: 400, height: 300, quality: 85 },
-    card: { width: 600, height: 400, quality: 85 },
-    large: { width: 800, height: 600, quality: 90 },
-    main: { width: 1200, height: 800, quality: 95 },
-    gallery: { width: 1600, height: 1200, quality: 95 }
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const config = sizeConfigs[size];
-
-  // Generate optimized image URL
-  const getOptimizedUrl = (originalSrc: string): string => {
-    // If it's already an external optimized URL, use as-is
-    if (originalSrc.includes('images.pexels.com') || originalSrc.includes('cdn.') || originalSrc.includes('cloudinary.com')) {
-      if (originalSrc.includes('pexels.com')) {
-        return `${originalSrc}?auto=compress&cs=tinysrgb&w=${config.width}&h=${config.height}&dpr=2`;
+    const loadOptimizedImage = async () => {
+      try {
+        if (!src) return;
+        
+        // Get the size configuration
+        const sizeConfig = IMAGE_SIZES[size];
+        
+        // Use the encrypted loader for optimization
+        const optimized = await encryptedLoader({ 
+          src, 
+          width: sizeConfig.width, 
+          quality: sizeConfig.quality 
+        });
+        
+        if (isMounted) {
+          setOptimizedSrc(optimized);
+        }
+      } catch (error) {
+        console.warn('Image optimization failed for', src, error);
+        if (isMounted) {
+          setOptimizedSrc(src); // Fallback to original
+        }
       }
-      return originalSrc;
-    }
+    };
 
-    // For local images, return as-is (they're already optimized)
-    return originalSrc;
-  };
+    loadOptimizedImage();
 
-  const optimizedSrc = getOptimizedUrl(src);
+    return () => {
+      isMounted = false;
+    };
+  }, [src, size]);
 
   const handleLoad = () => {
     setIsLoaded(true);
+    setHasError(false);
   };
 
   const handleError = () => {
     setHasError(true);
     setIsLoaded(true);
+    // Try fallback image
+    if (optimizedSrc !== src) {
+      setOptimizedSrc(src);
+    } else {
+      setOptimizedSrc('/vdp hero (2).webp');
+    }
   };
-
-  // Fallback image
-  const fallbackSrc = '/vdp hero (2).webp';
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
       
       <img
-        src={hasError ? fallbackSrc : optimizedSrc}
+        src={optimizedSrc}
         alt={alt}
         className={`w-full h-full object-cover transition-opacity duration-300 ${
           isLoaded ? 'opacity-100' : 'opacity-0'

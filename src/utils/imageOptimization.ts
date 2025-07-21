@@ -48,7 +48,7 @@ interface OptimizedImageOptions {
   cache?: number;
 }
 
-export default async function encryptedLoader({ src, width, quality = 80, cache = 1 }: OptimizedImageOptions) {
+export default async function encryptedLoader({ src, width, quality = 80, cache = 1 }: OptimizedImageOptions): Promise<string> {
   // Skip optimization for local development images or already optimized images
   if (!src || src.startsWith('/') || src.includes('dealertower.app/image/') || src.includes('localhost') || src.includes('pexels.com')) {
     return src;
@@ -74,7 +74,8 @@ export const IMAGE_SIZES = {
   hero: { width: 1920, quality: 90 },
   card: { width: 500, quality: 80 },
   gallery: { width: 800, quality: 85 },
-  fullscreen: { width: 2048, quality: 90 }
+  fullscreen: { width: 2048, quality: 90 },
+  main: { width: 1200, quality: 95 }
 };
 
 // Helper function to get optimized image URL with predefined sizes

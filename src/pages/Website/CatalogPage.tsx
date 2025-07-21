@@ -31,6 +31,9 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
     'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2'
   ];
 
+  // Ensure keywords is always an array
+  const keywords = Array.isArray(product.keywords) ? product.keywords : [];
+
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
@@ -113,52 +116,39 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
         <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{product.title}</h3>
         <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{product.subtitle}</p>
         <div className="flex items-center justify-between">
-          {/* REMOVE PRICE DISPLAY */}
-          {/* <div className="flex items-center space-x-2">
-            {(() => {
-              const priceInfo = formatPriceWithSale(product.retail_price, product.sale_price);
-              return (
-                <>
-                  <span className={`${priceInfo.shouldUseSmallFont ? 'text-base' : 'text-lg'} font-inter ${priceInfo.isOnSale ? 'text-red-600' : 'font-normal'}`} 
-                        style={{ color: priceInfo.isOnSale ? '#dc2626' : '#636363' }}>
-                    {priceInfo.displayPrice}
-                  </span>
-                  {priceInfo.originalPrice && (
-                    <span className={`${priceInfo.shouldUseSmallFont ? 'text-base' : 'text-lg'} font-inter line-through`} style={{ color: '#636363' }}>
-                      {priceInfo.originalPrice}
-                    </span>
-                  )}
-                </>
-              );
-            })()}
-          </div> */}
           <div /> {/* keep layout spacing */}
           <div className="flex items-center space-x-1">
-            {product.keywords.slice(0, 2).map((tag, index) => (
-              <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded font-inter">
-                {tag}
-              </span>
-            ))}
-            {product.keywords.length > 2 && (
-              <Tooltip 
-                content={
-                  <div className="max-w-xs">
-                    <div className="font-medium mb-2">Additional Tags:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {product.keywords.slice(2).map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                }
-                position="top"
-              >
-                <span className="text-xs text-gray-500 font-inter cursor-help hover:text-gray-700 transition-colors">
-                  +{product.keywords.length - 2}
-                </span>
-              </Tooltip>
+            {keywords.length > 0 ? (
+              <>
+                {keywords.slice(0, 2).map((tag, index) => (
+                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded font-inter">
+                    {tag}
+                  </span>
+                ))}
+                {keywords.length > 2 && (
+                  <Tooltip 
+                    content={
+                      <div className="max-w-xs">
+                        <div className="font-medium mb-2">Additional Tags:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {keywords.slice(2).map((tag, index) => (
+                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    }
+                    position="top"
+                  >
+                    <span className="text-xs text-gray-500 font-inter cursor-help hover:text-gray-700 transition-colors">
+                      +{keywords.length - 2}
+                    </span>
+                  </Tooltip>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-gray-400 font-inter">No tags</span>
             )}
           </div>
         </div>

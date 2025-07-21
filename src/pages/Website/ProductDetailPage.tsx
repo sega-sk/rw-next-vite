@@ -237,18 +237,18 @@ export default function ProductDetailPage() {
             height: '930px',
             minHeight: '256px',
             maxHeight: '930px',
-            background: `#000000url('${getBgImage(currentProduct)}') center center / cover no-repeat`,
+            background: `#000000 url('${getBgImage(currentProduct)}') center center / cover no-repeat`,
             transition: 'background-image 0.3s',
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-40 z-10 hidden" />
-          <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
+          <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4 product-hero-content">
             <h1 className="text-white font-bebas text-5xl md:text-7xl drop-shadow-lg mb-2">{currentProduct.title}</h1>
             {currentProduct.subtitle && (
               <h2 className="text-white font-inter text-xl md:text-2xl font-normal drop-shadow mb-4">{currentProduct.subtitle}</h2>
             )}
             {/* Main product image below title/subtitle */}
-            <div className="w-full flex justify-center bg-white py-6">
+            <div className="flex justify-center">
               <div className="relative rounded-lg overflow-hidden shadow-lg" style={{ maxWidth: 600, width: '100%' }}>
                 <OptimizedImage
                   src={images[0]}
@@ -279,7 +279,7 @@ export default function ProductDetailPage() {
             >
               <ChevronLeft />
             </button>
-            <div className="relative max-w-3xl w-full flex flex-col items-center">
+            <div className="relative max-w-3xl w-full flex flex-col items-center max-w-88vw-mode">
               <OptimizedImage
                 src={images[galleryIndex]}
                 alt={`${currentProduct.title} ${galleryIndex + 1}`}
@@ -658,7 +658,7 @@ function ThumbnailSlider({
           <button
             onClick={scrollLeft}
             disabled={isAnimating}
-            className="thumbnail-slider-nav left absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-all transform hover:scale-110 disabled:opacity-50"
+            className="hidden thumbnail-slider-nav left absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-all transform hover:scale-110 disabled:opacity-50"
           >
             <ChevronLeft className="h-4 w-4 text-gray-600" />
           </button>
@@ -706,7 +706,7 @@ function ThumbnailSlider({
           <button
             onClick={scrollRight}
             disabled={isAnimating}
-            className="thumbnail-slider-nav right absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-all transform hover:scale-110 disabled:opacity-50"
+            className="hidden thumbnail-slider-nav right absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-all transform hover:scale-110 disabled:opacity-50"
           >
             <ChevronRight className="h-4 w-4 text-gray-600" />
           </button>
@@ -715,7 +715,7 @@ function ThumbnailSlider({
       
       {/* Image Counter */}
       <div className="text-center mt-3 text-sm text-gray-500 font-inter transition-opacity duration-300">
-        {currentImageIndex + 1} of {images.length} images • Click thumbnail to select, hover for gallery
+        {currentImageIndex + 1} of {images.length} images
       </div>
     </div>
   );

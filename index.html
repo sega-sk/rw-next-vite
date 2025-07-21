@@ -54,13 +54,11 @@
     <link rel="preconnect" href="https://dealertower.app" crossorigin />
     <link rel="dns-prefetch" href="https://reel-wheel-api-x92jj.ondigitalocean.app">
     
-    <!-- Optimized font loading -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" /></noscript>
+    <!-- Load fonts synchronously to avoid CSP issues -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
     
     <!-- Additional CSS -->
-    <link rel="stylesheet" href="/adds.css" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="/adds.css" /></noscript>
+    <link rel="stylesheet" href="/adds.css" />
     
     <!-- Preload critical resources -->
     <link rel="preload" href="/logo-color.webp" as="image" type="image/webp" />
