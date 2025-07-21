@@ -32,7 +32,7 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
   ];
 
   // Ensure keywords is always an array
-  const keywords = Array.isArray(product.keywords) ? product.keywords : [];
+  const keywords = Array.isArray(product.movies) ? product.movies : [];
 
   // Get price information using utility
   const priceInfo = formatPriceWithSale(product.retail_price, product.sale_price);
@@ -205,7 +205,7 @@ export default function CatalogPage() {
   });
   const [sortBy, setSortBy] = useState('Featured');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 15;
   const { toggleFavorite, isFavorite } = useFavorites();
 
   // Fetch products with filters - Fix the API call
