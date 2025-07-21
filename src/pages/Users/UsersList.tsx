@@ -11,6 +11,7 @@ import Select from '../../components/Forms/Select';
 import { apiService } from '../../services/api';
 import { useApi, useMutation } from '../../hooks/useApi';
 import { useToastContext } from '../../contexts/ToastContext';
+import type { UserRead, UserCreate, UserUpdate } from '../../types/api';
 
 const roleOptions = [
   { value: '', label: 'Select Role' },
@@ -49,43 +50,15 @@ export default function UsersList() {
     );
   }
 
-  // API hooks - Use apiService instead of apiClient
+  // API hooks - Fixed to use the correct API service method
   const { data: usersData, loading, execute: refetchUsers, error: apiError } = useApi(
     () => {
-      // Try different API methods that might exist
-      if (apiService.getUsers) {
-        return apiService.getUsers({ 
-          q: searchTerm, 
-          limit: itemsPerPage * 10,
-          sort: '-created_at' 
-        });
-      } else if (apiService.listUsers) {
-        return apiService.listUsers({ 
-          q: searchTerm, 
-          limit: itemsPerPage * 10,
-          sort: '-created_at' 
-        });
-      } else {
-        // Fallback - return demo data for now
-        return Promise.resolve({
-          rows: [
-            {
-              id: 'demo-user-1',
-              email: 'admin@example.com',
-              role: 'admin',
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 'demo-user-2', 
-              email: 'user@example.com',
-              role: 'user',
-              created_at: new Date().toISOString()
-            }
-          ],
-          total: 2,
-          offset: 0
-        });
-      }
+      // Use the apiService.getUsers method that we just added
+      return apiService.getUsers({ 
+        q: searchTerm, 
+        limit: itemsPerPage * 10,
+        sort: '-created_at' 
+      });
     },
     { 
       immediate: true,
@@ -96,36 +69,15 @@ export default function UsersList() {
   );
 
   const { mutate: createUser, loading: creating } = useMutation(
-    (data: any) => {
-      if (apiService.createUser) {
-        return apiService.createUser(data);
-      } else {
-        // Mock response for now
-        return Promise.resolve({ id: 'new-user', ...data });
-      }
-    }
+    (data: UserCreate) => apiService.createUser(data)
   );
 
   const { mutate: updateUser, loading: updating } = useMutation(
-    ({ id, data }: { id: string; data: any }) => {
-      if (apiService.updateUser) {
-        return apiService.updateUser(id, data);
-      } else {
-        // Mock response for now
-        return Promise.resolve({ id, ...data });
-      }
-    }
+    ({ id, data }: { id: string; data: UserUpdate }) => apiService.updateUser(id, data)
   );
 
   const { mutate: deleteUser, loading: deleting } = useMutation(
-    (id: string) => {
-      if (apiService.deleteUser) {
-        return apiService.deleteUser(id);
-      } else {
-        // Mock response for now
-        return Promise.resolve({ success: true });
-      }
-    }
+    (id: string) => apiService.deleteUser(id)
   );
 
   // Search effect - Fixed debounce logic
@@ -296,7 +248,8 @@ export default function UsersList() {
     }
   };
 
-  // Show API error if there's one or show warning if using demo data
+  // Remove the demo data fallback and API method checking
+  // Show API error if there's one
   if (apiError) {
     return (
       <div className="p-6">
@@ -312,27 +265,8 @@ export default function UsersList() {
     );
   }
 
-  // Show demo data warning
-  const isDemoData = !apiService.getUsers && !apiService.listUsers;
-
   return (
     <div className="p-6">
-      {isDemoData && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <Shield className="h-5 w-5 text-yellow-400" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">Demo Mode</h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>User management API is not available. Showing demo data.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">User Management</h1>
         
@@ -341,7 +275,6 @@ export default function UsersList() {
             icon={Plus} 
             onClick={() => setIsEditModalOpen(true)} 
             className="btn-hover"
-            disabled={isDemoData}
           >
             Add User
           </Button>

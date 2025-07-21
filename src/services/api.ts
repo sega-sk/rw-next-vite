@@ -626,6 +626,48 @@ class ApiService {
     
     return result;
   }
+
+  // Add User Management API methods
+  async getUsers(params: {
+    limit?: number;
+    offset?: number;
+    q?: string;
+    sort?: string;
+  } = {}): Promise<ListResponse<User>> {
+    const searchParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString());
+      }
+    });
+
+    return this.makeAuthenticatedRequest(`/v1/users/?${searchParams.toString()}`) as Promise<ListResponse<User>>;
+  }
+
+  async createUser(data: UserCreate): Promise<User> {
+    return this.makeAuthenticatedRequest('/v1/users/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }) as Promise<User>;
+  }
+
+  async updateUser(id: string, data: UserUpdate): Promise<User> {
+    return this.makeAuthenticatedRequest(`/v1/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }) as Promise<User>;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.makeAuthenticatedRequest(`/v1/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getUser(id: string): Promise<User> {
+    return this.makeAuthenticatedRequest(`/v1/users/${id}`) as Promise<User>;
+  }
 }
 
 export const apiService = new ApiService();

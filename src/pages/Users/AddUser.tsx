@@ -33,14 +33,7 @@ export default function AddUser() {
     }
     setIsSubmitting(true);
     try {
-      // Check if createUser method exists
-      if (apiService.createUser) {
-        await apiService.createUser(formData);
-      } else {
-        // Show warning that this is demo mode
-        setAlert({ type: 'error', message: 'User management API is not available in demo mode.' });
-        return;
-      }
+      await apiService.createUser(formData);
       
       setAlert({ type: 'success', message: 'User created successfully!' });
       console.log('User created:', formData.email);
@@ -105,6 +98,13 @@ export default function AddUser() {
           <Button type="submit" loading={isSubmitting}>
             Save
           </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// This file is already a standalone page for adding a user.
         </div>
       </form>
     </div>
