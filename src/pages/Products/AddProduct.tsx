@@ -923,6 +923,14 @@ export default function AddProduct() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Connected Memorabilia</h3>
+                <button
+                  className="ml-3 px-2 py-1 rounded bg-purple-600 text-white text-xs add-connections-btn-plus"
+                  onClick={() => navigate('/admin/memorabilia/add')}
+                  title="Add new Memorabilia"
+                  type="button"
+                >
+                  +
+                </button>
                 <button 
                   type="button"
                   onClick={() => navigate('/admin/memorabilia')}
@@ -972,6 +980,14 @@ export default function AddProduct() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Connected Merchandise</h3>
+                <button
+                  className="ml-3 px-2 py-1 rounded bg-green-600 text-white text-xs add-connections-btn-plus"
+                  onClick={() => navigate('/admin/merchandise/add')}
+                  title="Add new Merchandise"
+                  type="button"
+                >
+                  +
+                </button>
                 <button 
                   type="button"
                   onClick={() => navigate('/admin/merchandise')}

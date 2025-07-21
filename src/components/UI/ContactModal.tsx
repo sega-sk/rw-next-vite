@@ -196,7 +196,7 @@ export default function ContactModal({
                   </div>
                 ) : (
                   <div className="text-lg font-bold text-yellow-600 font-inter call-for-price-modal">
-                    Call for Price
+                    Get in Touch
                   </div>
                 )}
                 

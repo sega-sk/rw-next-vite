@@ -368,7 +368,7 @@ body .product-detail-main-slider {
 }
 .product-hero-content h2 {
   margin-bottom: auto;
-    padding-left: 8px;
+    padding-left: 4px;
     color: #ca8a04 !important;
     position: relative;
     z-index: 4;
@@ -381,7 +381,7 @@ body .product-detail-main-slider {
     border: none;
     outline: none;
     border-radius: 0;
-    transform: translate(-20px, -24px);
+    transform: translate(-20px, 4px);
     justify-self: flex-start;
     z-index: 3;
     position: relative;
@@ -552,6 +552,18 @@ html {
     transform: translateY(-53%);
 }
 
+.add-connections-btn-plus {
+  width: 28px;
+    height: 26px;
+    font-size: 34px;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 400;
+    padding-top: 8px;
+}
+
 /* Product detail slider container adjustments */
 .product-detail-main {
   width: 100% !important;
@@ -561,7 +573,13 @@ html {
 
 .related-products-wrapper {
   width: 100vw !important;
-  background-color: lightgray;
+  background-color: rgba(0, 0, 0, .06);
+  padding: 44px 0;
+}
+.related-products-wrapper > * {
+  max-width: 1280px !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
 }
 
 /* Force full width for the image container specifically */
@@ -571,6 +589,7 @@ html {
   position: relative !important;
   left: 0 !important;
   right: 0 !important;
+  margin: 0 !important;
      max-height: calc(100vh - 320px) !important;
     overflow: hidden;
     height: calc(100vh - 320px) !important;
@@ -581,6 +600,27 @@ html {
   box-shadow: none !important;
   transform: none !important;
   */
+}
+
+@media(min-width: 481px) {
+  body .product-detail-main > .w-full {
+    min-height: 256px !important;
+  }
+}
+@media(min-width: 769px) {
+  body .product-detail-main > .w-full {
+    min-height: 400px !important;
+  }
+}
+@media(min-width: 1441px) {
+  body .product-detail-main > .w-full {
+    min-height: 623px !important;
+  }
+}
+@media(min-width: 1981px) {
+  body .product-detail-main > .w-full {
+    min-height: 820px !important;
+  }
 }
 
 .max-w-88vw-mode {

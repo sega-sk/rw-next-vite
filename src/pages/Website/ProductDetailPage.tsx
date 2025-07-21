@@ -423,14 +423,6 @@ export default function ProductDetailPage() {
             <div className="product-merchandise-wrapper flex items-center justify-between mb-8">
               <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 flex items-center">
                 Merchandise
-                <button
-                  className="ml-3 px-2 py-1 rounded bg-green-600 text-white text-xs"
-                  onClick={() => navigate('/admin/merchandise/add')}
-                  title="Add new Merchandise"
-                  type="button"
-                >
-                  +
-                </button>
               </h2>
               <button
                 onClick={() => navigate(`/${currentProduct.slug}/merchandise`)}
@@ -489,15 +481,7 @@ export default function ProductDetailPage() {
           <div className="product-memorabilia-wrapper mb-16 lg:mb-0">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl md:text-3xl font-bebas text-gray-900 flex items-center">
-                Movie Memorabilia
-                <button
-                  className="ml-3 px-2 py-1 rounded bg-purple-600 text-white text-xs"
-                  onClick={() => navigate('/admin/memorabilia/add')}
-                  title="Add new Memorabilia"
-                  type="button"
-                >
-                  +
-                </button>
+                Memorabilia
               </h2>
               <button
                 onClick={() => navigate(`/${currentProduct.slug}/memorabilia`)}
@@ -753,10 +737,10 @@ function getBgImage(product: any): string {
   }
   // Default backgrounds (public folder)
   if (typeof window !== 'undefined') {
-    if (window.innerWidth <= 767) {
+    if (window.innerWidth <= 768) {
       return '/reel_wheels_background_m.webp';
     }
-    if (window.innerWidth <= 1248) {
+    if (window.innerWidth <= 1440) {
       return '/reel_wheels_background_t.webp';
     }
   }
