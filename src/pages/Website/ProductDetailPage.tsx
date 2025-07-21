@@ -559,7 +559,7 @@ export default function ProductDetailPage() {
               <div
                 key={relatedProduct.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/catalog/${getProductType(relatedProduct)}/${relatedProduct.slug}`)}
+                onClick={() => handleRelatedProductClick(relatedProduct)}
               >
                 <OptimizedImage
                   src={relatedProduct.images?.[0] || '/vdp hero (2).webp'}

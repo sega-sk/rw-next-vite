@@ -580,7 +580,7 @@ html {
 }
 
 .related-products-wrapper {
-  width: 100vw !important;
+  width: 100% !important;
   background-color: rgba(0, 0, 0, .06);
   padding: 44px 0;
 }
@@ -604,6 +604,7 @@ html {
     height: calc(100vh - 370px) !important;
     min-height: 420px !important;
     margin-bottom: 1.5rem !important;
+    width: 100% !important;
 /*
   max-width: 1400px !important;
   margin: 0 auto 1.5rem !important;
