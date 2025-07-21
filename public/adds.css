@@ -409,8 +409,8 @@ body .product-detail-main-slider {
 }
 @media(max-width: 1980px) {
   .product-hero-content {
-    padding-top: 240px !important;
-    padding-left: 120px !important; 
+    padding-top: 100px !important;
+    padding-left: 100px !important; 
   }
 }
 @media(max-width: 980px) {
