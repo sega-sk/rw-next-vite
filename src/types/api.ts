@@ -2,6 +2,7 @@ export interface Product {
   id: string;
   title: string;
   subtitle?: string | null;
+  description_title?: string | null;
   description?: string | null;
   product_types?: string[];
   movies?: string[];
@@ -25,20 +26,28 @@ export interface Product {
   rental_price_monthly?: string | number | null;
   rental_price_yearly?: string | number | null;
   slug: string;
+  created_at?: string;
+  updated_at?: string;
   memorabilia_ids?: string[];
   merchandise_ids?: string[];
   product_ids?: string[];
-  created_at?: string | null;
-  updated_at?: string | null;
-  // Relations
-  products?: LinkedItem[];
-  memorabilia?: Memorabilia[];
-  merchandises?: Merchandise[];
-  // Legacy/compat fields
-  price?: number;
-  salePrice?: number;
-  category?: string;
-  status?: 'active' | 'inactive' | 'pending';
+  video_url?: string;
+  // Related data from API response
+  products?: Array<{
+    id: string;
+    title: string;
+    subtitle?: string;
+  }>;
+  memorabilia?: Array<{
+    id: string;
+    title: string;
+    subtitle?: string;
+  }>;
+  merchandise?: Array<{
+    id: string;
+    title: string;
+    subtitle?: string;
+  }>;
 }
 
 export interface Memorabilia {

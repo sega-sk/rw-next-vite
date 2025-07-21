@@ -422,6 +422,26 @@ class ApiService {
     invalidateProductCache();
   }
 
+  // Add the missing clear background method
+  async clearProductBackground(id: string): Promise<Product> {
+    try {
+      const result = await this.makeAuthenticatedRequest(`/v1/products/${id}/clear-background`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }) as Product;
+      
+      // Invalidate product cache after background removal
+      invalidateProductCache();
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to clear product background:', error);
+      throw error;
+    }
+  }
+
   // Memorabilia API
   async getMemorabilia(params: {
     limit?: number;

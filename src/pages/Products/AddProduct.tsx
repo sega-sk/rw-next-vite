@@ -425,26 +425,31 @@ export default function AddProduct() {
     }
     setBgRemoving(true);
     try {
-      // Call the API endpoint for background removal
-      const apiUrl = `/api/products/${editProduct?.id || ''}/clear-background`;
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: formData.images[0] }),
-      });
-      if (!res.ok) throw new Error('Failed to remove background');
-      const data = await res.json();
-      if (!data?.imageUrl) throw new Error('No image returned');
-      setFormData(prev => ({
-        ...prev,
-        images: [data.imageUrl, ...prev.images.slice(1)],
-      }));
-      if (isEditing && editProduct?.id) {
-        incrementBgRemoveCount(editProduct.id);
-        setBgRemoveCount(getBgRemoveCount(editProduct.id));
+      // Use the correct API endpoint - it should be the API service, not a local endpoint
+      const result = await apiService.clearProductBackground(editProduct?.id || '');
+      
+      // The API returns the full updated product object
+      if (result && result.images && Array.isArray(result.images)) {
+        // Update form data with the new images array from the API response
+        setFormData(prev => ({
+          ...prev,
+          images: result.images || prev.images
+        }));
+        
+        // Track the background removal count
+        if (isEditing && editProduct?.id) {
+          incrementBgRemoveCount(editProduct.id);
+          setBgRemoveCount(getBgRemoveCount(editProduct.id));
+        }
+        
+        success('Background Removed', 'Background removed successfully from the first image!');
+      } else {
+        throw new Error('Invalid response format from background removal API');
       }
     } catch (err: any) {
+      console.error('Background removal error:', err);
       setBgRemoveError(err.message || 'Failed to remove background');
+      error('Background Removal Failed', err.message || 'Failed to remove background. Please try again.');
     } finally {
       setBgRemoving(false);
     }
@@ -904,7 +909,7 @@ export default function AddProduct() {
                     disabled={bgRemoving || (isEditing && editProduct?.id && bgRemoveCount >= 2)}
                   >
                     {bgRemoving ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-                    Remove Background (first image)
+                    Cut Background (1st image)
                   </Button>
                   <span className="text-xs text-gray-500">
                     {isEditing && editProduct?.id
@@ -912,7 +917,7 @@ export default function AddProduct() {
                       : '(max 2 per product)'}
                   </span>
                   {bgRemoveError && (
-                    <span className="text-xs text-red-600 ml-2">{bgRemoveError}</span>
+                    <span className="text-xs text-red-600 ml-2"><small>{bgRemoveError}</small></span>
                   )}
                 </div>
               )}

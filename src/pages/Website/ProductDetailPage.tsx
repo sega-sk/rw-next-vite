@@ -47,7 +47,7 @@ export default function ProductDetailPage() {
   // Related products, memorabilia, and merchandise from product object
   const relatedProducts = currentProduct?.products || [];
   const memorabiliaItems = currentProduct?.memorabilia || [];
-  const merchandiseItems = currentProduct?.merchandises || [];
+  const merchandiseItems = currentProduct?.merchandises || currentProduct?.merchandise || [];
 
   // Ensure we always have a valid images array
   const productImages = currentProduct?.images || [];
@@ -88,15 +88,18 @@ export default function ProductDetailPage() {
 
   const handleRelatedProductClick = (relatedProduct: any) => {
     const type = relatedProduct.product_types?.[0] || 'vehicle';
-    navigate(`/catalog/${type}/${relatedProduct.slug}`);
+    // Force full page reload to ensure proper navigation
+    window.location.href = `/catalog/${type}/${relatedProduct.slug}`;
   };
 
   const handleMemorabiliaClick = (item: any) => {
-    navigate(`/memorabilia/${item.slug || item.id}`);
+    // Navigate to memorabilia page
+    window.location.href = `/memorabilia/${item.slug || item.id}`;
   };
 
   const handleMerchandiseClick = (item: any) => {
-    navigate(`/merchandise/${item.slug || item.id}`);
+    // Navigate to merchandise page
+    window.location.href = `/merchandise/${item.slug || item.id}`;
   };
 
   // Helper to determine if price should be shown

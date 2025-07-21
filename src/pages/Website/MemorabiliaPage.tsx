@@ -116,7 +116,7 @@ function MemorabiliaCard({ item, onItemClick, onFavoriteToggle, isFavorite }: {
 }
 
 export default function MemorabiliaPage() {
-  const { slug } = useParams();
+  const { slug, productType } = useParams(); // Add productType from route
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -129,13 +129,16 @@ export default function MemorabiliaPage() {
   const itemsPerPage = 9;
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  // If we have a slug, redirect to a detail view (you can implement this later)
+  // Check if this is a product-specific memorabilia page
+  const isProductSpecific = !!productType && !!slug;
+
+  // If on a product's memorabilia page, don't redirect
   useEffect(() => {
-    if (slug) {
-      // For now, redirect to memorabilia main page
+    if (slug && !isProductSpecific) {
+      // This is a memorabilia detail page, redirect to main memorabilia page for now
       navigate('/memorabilia');
     }
-  }, [slug, navigate]);
+  }, [slug, isProductSpecific, navigate]);
 
   // Fetch all memorabilia for filtering
   const { data: memorabiliaData, loading, execute: refetchMemorabilia } = useApi(
@@ -147,13 +150,13 @@ export default function MemorabiliaPage() {
 
   // If on a product's memorabilia page, fetch the product to get its connections
   const { data: productData } = useApi(
-    () => slug ? apiService.getProduct(slug) : Promise.resolve(null),
-    { immediate: !!slug }
+    () => isProductSpecific ? apiService.getProduct(slug) : Promise.resolve(null),
+    { immediate: isProductSpecific }
   );
 
   // Filter memorabilia by connection if on a product's memorabilia page
   let allItems = memorabiliaData?.rows || [];
-  if (slug && productData) {
+  if (isProductSpecific && productData) {
     allItems = allItems.filter(item =>
       (productData.memorabilia_ids?.includes?.(item.id)) ||
       (item.product_ids?.includes?.(productData.id))
@@ -229,10 +232,10 @@ export default function MemorabiliaPage() {
   return (
     <div className="min-h-screen bg-white">
       <SEOHead
-        title="Movie Memorabilia Collection - Reel Wheels Experience"
-        description="Browse our exclusive collection of authentic movie memorabilia. From props to costumes, find unique pieces from your favorite films."
+        title={`${isProductSpecific ? `${productData?.title} - ` : ''}Movie Memorabilia Collection - Reel Wheels Experience`}
+        description={`Browse our exclusive collection of ${isProductSpecific ? `${productData?.title} ` : ''}authentic movie memorabilia. From props to costumes, find unique pieces from your favorite films.`}
         keywords="movie memorabilia, film props, movie costumes, Hollywood collectibles, cinema artifacts"
-        url="https://reelwheelsexperience.com/memorabilia"
+        url={`https://reelwheelsexperience.com/memorabilia${isProductSpecific ? `/${slug}` : ''}`}
       />
       
       <WebsiteHeader 
@@ -243,8 +246,20 @@ export default function MemorabiliaPage() {
 
       <div className="memorabilia-page-header bg-gray-50 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-          <h1 className="text-5xl font-bebas text-gray-900 mb-4" style={{ fontSize: '48px' }}>Movie Memorabilia</h1>
-          <p className="text-gray-600 font-inter">Authentic pieces from your favorite films</p>
+          <h1 className="text-5xl font-bebas text-gray-900 mb-4" style={{ fontSize: '48px' }}>
+            {isProductSpecific ? `${productData?.title} - Memorabilia` : 'Movie Memorabilia'}
+          </h1>
+          <p className="text-gray-600 font-inter">
+            {isProductSpecific ? `Memorabilia connected to ${productData?.title}` : 'Authentic pieces from your favorite films'}
+          </p>
+          {isProductSpecific && (
+            <button
+              onClick={() => navigate(`/catalog/${productType}/${slug}`)}
+              className="mt-4 text-blue-600 hover:text-blue-800 font-inter"
+            >
+              ← Back to {productData?.title}
+            </button>
+          )}
         </div>
       </div>
 
@@ -341,19 +356,55 @@ export default function MemorabiliaPage() {
                 <div className="p-4 md:p-6">
                   <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{item.title}</h3>
                   <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{item.subtitle}</p>
-                  <div className="mb-2 text-xs text-gray-500">ID: {item.id}</div>
-                  <div className="mb-2 text-xs text-gray-500">Slug: {item.slug}</div>
-                  <div className="mb-2 text-xs text-gray-500">Description: {item.description}</div>
-                  <div className="mb-2 text-xs text-gray-500">Keywords: {item.keywords?.join(', ')}</div>
-                  <div className="mb-2 text-xs text-gray-500">Created: {item.created_at}</div>
-                  <div className="mb-2 text-xs text-gray-500">Updated: {item.updated_at}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {item.keywords?.map((tag, index) => (
-                      <span key={index} className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded font-inter">
-                        {tag}
-                      </span>
-                    ))}
+                  
+                  {/* Show all available information */}
+                  {item.description && (
+                    <div className="mb-3">
+                      <span className="text-xs font-medium text-gray-500 block mb-1">Description:</span>
+                      <p className="text-xs text-gray-700 line-clamp-3">{item.description}</p>
+                    </div>
+                  )}
+                  
+                  <div className="mb-2 text-xs text-gray-500">
+                    <span className="font-medium">ID:</span> {item.id}
                   </div>
+                  
+                  {item.slug && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Slug:</span> {item.slug}
+                    </div>
+                  )}
+                  
+                  {item.created_at && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Created:</span> {new Date(item.created_at).toLocaleDateString()}
+                    </div>
+                  )}
+                  
+                  {item.updated_at && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Updated:</span> {new Date(item.updated_at).toLocaleDateString()}
+                    </div>
+                  )}
+                  
+                  {item.keywords?.length > 0 && (
+                    <div className="mb-3">
+                      <span className="text-xs font-medium text-gray-500 block mb-1">Keywords:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {item.keywords.map((tag, index) => (
+                          <span key={index} className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded font-inter">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {item.product_ids?.length > 0 && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Connected Products:</span> {item.product_ids.length}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -122,7 +122,7 @@ function MerchandiseCard({ item, onItemClick, onFavoriteToggle, isFavorite }: {
 }
 
 export default function MerchandisePage() {
-  const { slug } = useParams();
+  const { slug, productType } = useParams(); // Add productType from route
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -135,13 +135,16 @@ export default function MerchandisePage() {
   const itemsPerPage = 9;
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  // If we have a slug, redirect to a detail view (you can implement this later)
+  // Check if this is a product-specific merchandise page
+  const isProductSpecific = !!productType && !!slug;
+
+  // If on a product's merchandise page, don't redirect
   useEffect(() => {
-    if (slug) {
-      // For now, redirect to merchandise main page
+    if (slug && !isProductSpecific) {
+      // This is a merchandise detail page, redirect to main merchandise page for now
       navigate('/merchandise');
     }
-  }, [slug, navigate]);
+  }, [slug, isProductSpecific, navigate]);
 
   // Fetch all merchandise for filtering
   const { data: merchandiseData, loading, execute: refetchMerchandise } = useApi(
@@ -153,13 +156,13 @@ export default function MerchandisePage() {
 
   // If on a product's merchandise page, fetch the product to get its connections
   const { data: productData } = useApi(
-    () => slug ? apiService.getProduct(slug) : Promise.resolve(null),
-    { immediate: !!slug }
+    () => isProductSpecific ? apiService.getProduct(slug) : Promise.resolve(null),
+    { immediate: isProductSpecific }
   );
 
   // Filter merchandise by connection if on a product's merchandise page
   let allItems = merchandiseData?.rows || [];
-  if (slug && productData) {
+  if (isProductSpecific && productData) {
     allItems = allItems.filter(item =>
       (productData.merchandise_ids?.includes?.(item.id)) ||
       (item.product_ids?.includes?.(productData.id))
@@ -216,8 +219,18 @@ export default function MerchandisePage() {
   }, [searchTerm, selectedFilters, sortBy]);
 
   const handleItemClick = (item: any) => {
-    // For now, just show an alert or you can implement a detail modal
-    alert(`${item.title} - $${item.price}\n\nContact us to purchase this item!`);
+    // Show detailed information in alert or implement detail modal
+    const details = [
+      `Title: ${item.title}`,
+      item.subtitle ? `Subtitle: ${item.subtitle}` : '',
+      `Price: $${item.price}`,
+      item.description ? `Description: ${item.description}` : '',
+      item.keywords?.length ? `Keywords: ${item.keywords.join(', ')}` : '',
+      item.created_at ? `Created: ${new Date(item.created_at).toLocaleDateString()}` : '',
+      item.product_ids?.length ? `Connected to ${item.product_ids.length} products` : ''
+    ].filter(Boolean).join('\n\n');
+    
+    alert(`${item.title}\n\n${details}\n\nContact us to purchase this item!`);
   };
 
   const handlePageChange = (page: number) => {
@@ -244,10 +257,10 @@ export default function MerchandisePage() {
   return (
     <div className="min-h-screen bg-white">
       <SEOHead
-        title="Movie Merchandise - Reel Wheels Experience"
-        description="Shop our collection of movie-themed merchandise. T-shirts, hoodies, and collectibles from your favorite films."
-        keywords="movie merchandise, film t-shirts, movie collectibles, cinema apparel, Hollywood merchandise"
-        url="https://reelwheelsexperience.com/merchandise"
+        title={`${isProductSpecific ? `${productData?.title} - ` : ''}Movie Merchandise Collection - Reel Wheels Experience`}
+        description={`Browse our exclusive collection of ${isProductSpecific ? `${productData?.title} ` : ''}authentic movie merchandise. Find unique items from your favorite films.`}
+        keywords="movie merchandise, film items, movie collectibles, Hollywood merchandise"
+        url={`https://reelwheelsexperience.com/merchandise${isProductSpecific ? `/${slug}` : ''}`}
       />
       
       <WebsiteHeader 
@@ -258,8 +271,20 @@ export default function MerchandisePage() {
 
       <div className="merchandise-page-header bg-gray-50 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-          <h1 className="text-5xl font-bebas text-gray-900 mb-4" style={{ fontSize: '48px' }}>Merchandise</h1>
-          <p className="text-gray-600 font-inter">Movie-themed apparel and collectibles</p>
+          <h1 className="text-5xl font-bebas text-gray-900 mb-4" style={{ fontSize: '48px' }}>
+            {isProductSpecific ? `${productData?.title} - Merchandise` : 'Movie Merchandise'}
+          </h1>
+          <p className="text-gray-600 font-inter">
+            {isProductSpecific ? `Merchandise connected to ${productData?.title}` : 'Authentic merchandise from your favorite films'}
+          </p>
+          {isProductSpecific && (
+            <button
+              onClick={() => navigate(`/catalog/${productType}/${slug}`)}
+              className="mt-4 text-blue-600 hover:text-blue-800 font-inter"
+            >
+              ← Back to {productData?.title}
+            </button>
+          )}
         </div>
       </div>
 
@@ -341,13 +366,85 @@ export default function MerchandisePage() {
         ) : (
           <div className="merchandise-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {currentItems.map((item) => (
-              <MerchandiseCard
-                key={item.id}
-                item={item}
-                onItemClick={handleItemClick}
-                onFavoriteToggle={toggleFavorite}
-                isFavorite={isFavorite}
-              />
+              <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => handleItemClick(item)}>
+                <div className="relative overflow-hidden rounded-lg">
+                  {item.photos[0] ? (
+                    <OptimizedImage
+                      src={item.photos[0]}
+                      alt={item.title}
+                      size="card"
+                      className="no-transform-here w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="no-transform-here w-full h-48 md:h-64 bg-gray-900 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                      <span className="text-white text-lg font-bold">MERCHANDISE</span>
+                    </div>
+                  )}
+                  
+                  <div className="absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded text-sm font-medium">
+                    MERCHANDISE
+                  </div>
+                </div>
+                <div className="p-4 md:p-6">
+                  <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{item.title}</h3>
+                  <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{item.subtitle}</p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-lg font-bold text-green-600 font-inter">
+                      ${item.price}
+                    </div>
+                  </div>
+                  
+                  {/* Show all available information */}
+                  {item.description && (
+                    <div className="mb-3">
+                      <span className="text-xs font-medium text-gray-500 block mb-1">Description:</span>
+                      <p className="text-xs text-gray-700 line-clamp-3">{item.description}</p>
+                    </div>
+                  )}
+                  
+                  <div className="mb-2 text-xs text-gray-500">
+                    <span className="font-medium">ID:</span> {item.id}
+                  </div>
+                  
+                  {item.slug && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Slug:</span> {item.slug}
+                    </div>
+                  )}
+                  
+                  {item.created_at && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Created:</span> {new Date(item.created_at).toLocaleDateString()}
+                    </div>
+                  )}
+                  
+                  {item.updated_at && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Updated:</span> {new Date(item.updated_at).toLocaleDateString()}
+                    </div>
+                  )}
+                  
+                  {item.keywords?.length > 0 && (
+                    <div className="mb-3">
+                      <span className="text-xs font-medium text-gray-500 block mb-1">Keywords:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {item.keywords.map((tag, index) => (
+                          <span key={index} className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded font-inter">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {item.product_ids?.length > 0 && (
+                    <div className="mb-2 text-xs text-gray-500">
+                      <span className="font-medium">Connected Products:</span> {item.product_ids.length}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
