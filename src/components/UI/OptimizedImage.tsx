@@ -25,6 +25,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [optimizedSrc, setOptimizedSrc] = useState<string>(src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,7 +60,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [src, size]);
+  }, [src, size, retryCount]); // Add retryCount to dependencies
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -69,12 +70,18 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const handleError = () => {
     setHasError(true);
     setIsLoaded(true);
-    // Try fallback image
-    if (optimizedSrc !== src) {
+    
+    // Retry logic with different fallbacks
+    if (retryCount === 0 && optimizedSrc !== src) {
+      // First retry: use original source
       setOptimizedSrc(src);
-    } else {
+      setRetryCount(1);
+    } else if (retryCount === 1) {
+      // Second retry: use default fallback
       setOptimizedSrc('/vdp hero (2).webp');
+      setRetryCount(2);
     }
+    // After 2 retries, stop trying
   };
 
   return (
@@ -96,7 +103,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onClick={onClick}
         loading={priority ? 'eager' : loading}
         decoding="async"
+        key={`${optimizedSrc}-${retryCount}`} // Force re-render on retry
       />
+      
+      {hasError && retryCount >= 2 && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+          <span className="text-gray-500 text-sm">Image unavailable</span>
+        </div>
+      )}
     </div>
   );
 };

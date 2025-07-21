@@ -158,7 +158,8 @@ export default function AddProduct() {
   const [bgRemoving, setBgRemoving] = useState(false);
   const [bgRemoveError, setBgRemoveError] = useState('');
   const [bgRemoveCount, setBgRemoveCount] = useState(0);
-  const [showImageReorder, setShowImageReorder] = useState(false); // Add toggle state
+  const [showImageReorder, setShowImageReorder] = useState(false);
+  const [productPage, setProductPage] = useState(1); // Add pagination state
 
   // Fetch product data for editing
   const { data: editProduct, loading: loadingProduct } = useApi(
@@ -223,7 +224,7 @@ export default function AddProduct() {
       setFormData({
         title: editProduct.title || '',
         subtitle: editProduct.subtitle || '',
-        description_title: editProduct.description_title || '', // Add description_title
+        description_title: editProduct.description_title || '',
         description: editProduct.description || '',
         product_types: editProduct.product_types || [],
         movies: editProduct.movies || [],
@@ -243,9 +244,22 @@ export default function AddProduct() {
         rental_price_monthly: Number(editProduct.rental_price_monthly) || 0,
         rental_price_yearly: Number(editProduct.rental_price_yearly) || 0,
         slug: editProduct.slug || '',
-        memorabilia_ids: Array.isArray(editProduct.memorabilia_ids) ? editProduct.memorabilia_ids.map(String) : [],
-        merchandise_ids: Array.isArray(editProduct.merchandise_ids) ? editProduct.merchandise_ids.map(String) : [],
-        product_ids: Array.isArray(editProduct.product_ids) ? editProduct.product_ids.map(String) : [],
+        // Fix: Handle arrays properly and convert to strings consistently
+        memorabilia_ids: Array.isArray(editProduct.memorabilia_ids) 
+          ? editProduct.memorabilia_ids.map(id => String(id)) 
+          : Array.isArray(editProduct.memorabilia) 
+            ? editProduct.memorabilia.map(item => String(item.id || item))
+            : [],
+        merchandise_ids: Array.isArray(editProduct.merchandise_ids) 
+          ? editProduct.merchandise_ids.map(id => String(id))
+          : Array.isArray(editProduct.merchandises)
+            ? editProduct.merchandises.map(item => String(item.id || item))
+            : [],
+        product_ids: Array.isArray(editProduct.product_ids) 
+          ? editProduct.product_ids.map(id => String(id))
+          : Array.isArray(editProduct.products)
+            ? editProduct.products.map(item => String(item.id || item))
+            : [],
       });
       
       if (editProduct.background_image_url) {
@@ -330,21 +344,35 @@ export default function AddProduct() {
         });
         success('Product updated!', 'Product updated successfully!');
         logIfEnabled('Product updated:', editProduct.id);
-        setTimeout(() => {
-          alert('Product updated!');
-          logIfEnabled('Product update message shown');
+        
+        // Refresh the edit product data instead of redirecting
+        setTimeout(async () => {
+          try {
+            const refreshedProduct = await apiService.getProduct(editProduct.id);
+            if (refreshedProduct) {
+              // Update the edit product data to reflect changes
+              window.location.reload(); // Force refresh to get updated data
+            }
+          } catch (error) {
+            console.error('Failed to refresh product data:', error);
+          }
         }, 500);
       } else {
-        await createProduct(cleanedPayload);
+        const createdProduct = await createProduct(cleanedPayload);
         success('Product created!', 'Product created successfully!');
         logIfEnabled('Product created:', formData.title);
-        setTimeout(() => {
-          alert('Product created!');
-          logIfEnabled('Product create message shown');
-        }, 500);
+        
+        // Redirect to edit page for the newly created product
+        if (createdProduct?.id) {
+          setTimeout(() => {
+            navigate(`/admin/products/add?edit=${createdProduct.id}`);
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            navigate('/admin/product-list');
+          }, 1000);
+        }
       }
-      
-      navigate('/admin/product-list');
     } catch (error: any) {
       // Try to extract API error details
       let apiErrorMsg = '';
@@ -459,6 +487,14 @@ export default function AddProduct() {
       </div>
     );
   }
+
+  // Add pagination constants for Related Products
+  const productsPerPage = 20;
+  const allProducts = allProductsData?.rows || [];
+  const totalProductPages = Math.ceil(allProducts.length / productsPerPage);
+  const paginatedProducts = allProducts
+    .filter(p => p.id !== editProductId) // Don't show current product in related
+    .slice((productPage - 1) * productsPerPage, productPage * productsPerPage);
 
   return (
     <div className="p-6">
@@ -901,14 +937,15 @@ export default function AddProduct() {
                     <div key={item.id} className="flex items-center space-x-3 mb-3">
                       <input
                         type="checkbox"
-                        checked={formData.memorabilia_ids?.includes(item.id) || false}
+                        checked={formData.memorabilia_ids?.includes(String(item.id)) || false}
                         onChange={(e) => {
                           const checked = e.target.checked;
+                          const itemId = String(item.id);
                           setFormData(prev => ({
                             ...prev,
                             memorabilia_ids: checked 
-                              ? [...(prev.memorabilia_ids || []), item.id]
-                              : (prev.memorabilia_ids || []).filter(id => id !== item.id)
+                              ? [...(prev.memorabilia_ids || []), itemId]
+                              : (prev.memorabilia_ids || []).filter(id => id !== itemId)
                           }));
                         }}
                         className="rounded text-blue-600"
@@ -949,14 +986,15 @@ export default function AddProduct() {
                     <div key={item.id} className="flex items-center space-x-3 mb-3">
                       <input
                         type="checkbox"
-                        checked={formData.merchandise_ids?.includes(item.id) || false}
+                        checked={formData.merchandise_ids?.includes(String(item.id)) || false}
                         onChange={(e) => {
                           const checked = e.target.checked;
+                          const itemId = String(item.id);
                           setFormData(prev => ({
                             ...prev,
                             merchandise_ids: checked 
-                              ? [...(prev.merchandise_ids || []), item.id]
-                              : (prev.merchandise_ids || []).filter(id => id !== item.id)
+                              ? [...(prev.merchandise_ids || []), itemId]
+                              : (prev.merchandise_ids || []).filter(id => id !== itemId)
                           }));
                         }}
                         className="rounded text-blue-600"
@@ -979,59 +1017,63 @@ export default function AddProduct() {
               </div>
             </div>
 
-            {/* Related Products - Fix empty display */}
+            {/* Related Products - Fix empty display and add pagination */}
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Related Products</h3>
-                <button 
-                  type="button"
-                  onClick={() => navigate('/admin/product-list')}
-                  className="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                  View All
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">
+                    {allProducts.filter(p => p.id !== editProductId).length} total
+                  </span>
+                  <button 
+                    type="button"
+                    onClick={() => navigate('/admin/product-list')}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    View All
+                  </button>
+                </div>
               </div>
               <div className="border rounded-lg max-h-48 overflow-y-auto p-2 bg-white">
-                {allProductsData?.rows?.length > 0 ? (
-                  allProductsData.rows
-                    .filter(p => p.id !== editProductId) // Don't show current product in related
-                    .map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3 mb-3 p-2 hover:bg-gray-50 rounded">
-                        <input
-                          type="checkbox"
-                          checked={formData.product_ids?.includes(item.id) || false}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setFormData(prev => ({
-                              ...prev,
-                              product_ids: checked 
-                                ? [...(prev.product_ids || []), item.id]
-                                : (prev.product_ids || []).filter(id => id !== item.id)
-                            }));
-                          }}
-                          className="rounded text-blue-600"
-                        />
-                        <OptimizedImage
-                          src={item.images?.[0] || '/vdp hero (2).webp'} 
-                          alt={item.title}
-                          size="thumbnail"
-                          className="w-10 h-10 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
-                          {item.product_types?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {item.product_types.slice(0, 2).map((type, idx) => (
-                                <span key={idx} className="px-1 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">
-                                  {type}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                {paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 mb-3 p-2 hover:bg-gray-50 rounded">
+                      <input
+                        type="checkbox"
+                        checked={formData.product_ids?.includes(String(item.id)) || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          const itemId = String(item.id);
+                          setFormData(prev => ({
+                            ...prev,
+                            product_ids: checked 
+                              ? [...(prev.product_ids || []), itemId]
+                              : (prev.product_ids || []).filter(id => id !== itemId)
+                          }));
+                        }}
+                        className="rounded text-blue-600"
+                      />
+                      <OptimizedImage
+                        src={item.images?.[0] || '/vdp hero (2).webp'} 
+                        alt={item.title}
+                        size="thumbnail"
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                        {item.product_types?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.product_types.slice(0, 2).map((type, idx) => (
+                              <span key={idx} className="px-1 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">
+                                {type}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ))
+                    </div>
+                  ))
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-sm text-gray-500 mb-2">No products found</p>
@@ -1044,7 +1086,33 @@ export default function AddProduct() {
                     </button>
                   </div>
                 )}
+                
+                {/* Add pagination controls */}
+                {totalProductPages > 1 && (
+                  <div className="flex justify-center mt-2 gap-2 pt-2 border-t">
+                    <button
+                      type="button"
+                      disabled={productPage === 1}
+                      onClick={() => setProductPage(productPage - 1)}
+                      className="px-2 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Prev
+                    </button>
+                    <span className="text-xs flex items-center px-2">
+                      {productPage} / {totalProductPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={productPage === totalProductPages}
+                      onClick={() => setProductPage(productPage + 1)}
+                      className="px-2 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
+              
               {/* Show selected count */}
               {formData.product_ids?.length > 0 && (
                 <div className="mt-2 text-sm text-gray-600">

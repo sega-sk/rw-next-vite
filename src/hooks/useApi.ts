@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { cacheManager } from '../services/cache';
+import { clearImageCache } from '../utils/imageOptimization';
 
 interface UseApiState<T> {
   data: T | null;
@@ -14,6 +15,7 @@ interface UseApiOptions {
   staleWhileRevalidate?: boolean;
   skipCache?: boolean;
   fallbackData?: any;
+  clearImageCache?: boolean;
 }
 
 export function useApi<T>(
@@ -26,10 +28,12 @@ export function useApi<T>(
     error: null,
   });
 
-  const execute = async () => {
+  const execute = useCallback(async (newParams?: any) => {
+    if (state.loading) return;
+    
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      
       let result: T;
       
       // Check if we're on admin pages - always skip cache
@@ -50,8 +54,13 @@ export function useApi<T>(
         result = await apiCall();
       }
       
-      console.log('useApi execute result:', result); // Debug log
       setState({ data: result, loading: false, error: null });
+      
+      // Clear image cache when new data is loaded to prevent stale images
+      if (options.clearImageCache !== false) {
+        clearImageCache();
+      }
+      
       return result;
     } catch (error) {
       console.error('useApi execute error:', error); // Debug log
@@ -65,7 +74,7 @@ export function useApi<T>(
       setState({ data: null, loading: false, error: errorMessage });
       throw error;
     }
-  };
+  }, [apiCall, state.loading, options.cacheKey, options.skipCache, options.cacheTTL, options.clearImageCache]);
 
   const reset = () => {
     setState({ data: null, loading: false, error: null });

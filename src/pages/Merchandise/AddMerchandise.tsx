@@ -96,11 +96,17 @@ export default function AddMerchandise() {
       const res = await createMerchandise(formData);
       logIfEnabled('Merchandise created:', res);
       alert('Merchandise created successfully!');
-      setTimeout(() => {
-        alert('Saved! Your merchandise was added.');
-        logIfEnabled('Merchandise save message shown');
-      }, 500);
-      navigate('/admin/merchandise');
+      
+      // Redirect to edit page for the newly created item
+      if (res?.id) {
+        setTimeout(() => {
+          navigate(`/admin/merchandise/edit/${res.id}`);
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          navigate('/admin/merchandise');
+        }, 1000);
+      }
     } catch (error) {
       logIfEnabled('Create merchandise error:', error);
       alert('Failed to create merchandise.');
@@ -166,14 +172,15 @@ export default function AddMerchandise() {
               <label key={product.id} className="flex items-center space-x-2 mb-1">
                 <input
                   type="checkbox"
-                  checked={formData.product_ids?.includes(product.id) || false}
+                  checked={formData.product_ids?.includes(String(product.id)) || false}
                   onChange={e => {
                     const checked = e.target.checked;
+                    const productId = String(product.id);
                     setFormData(prev => ({
                       ...prev,
                       product_ids: checked
-                        ? [...(prev.product_ids || []), product.id]
-                        : (prev.product_ids || []).filter(id => id !== product.id)
+                        ? [...(prev.product_ids || []), productId]
+                        : (prev.product_ids || []).filter(id => id !== productId)
                     }));
                   }}
                   className="rounded text-blue-600"

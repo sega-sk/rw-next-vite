@@ -248,7 +248,7 @@ export default function ProductDetailPage() {
               <h2 className="text-white font-inter text-xl md:text-2xl font-normal drop-shadow mb-4">{currentProduct.subtitle}</h2>
             )}
             {/* Main product image below title/subtitle */}
-            <div className="flex justify-center">
+            <div className="flex">
               <div className="relative rounded-lg overflow-hidden shadow-lg" style={{ maxWidth: 600, width: '100%' }}>
                 <OptimizedImage
                   src={images[0]}

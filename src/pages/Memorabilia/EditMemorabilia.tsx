@@ -61,7 +61,12 @@ export default function EditMemorabilia() {
         description: item.description || '',
         photos: item.photos || [],
         keywords: item.keywords || [],
-        product_ids: Array.isArray(item.product_ids) ? item.product_ids.map(String) : [],
+        // Fix: Handle product_ids properly from API response
+        product_ids: Array.isArray(item.product_ids) 
+          ? item.product_ids.map(id => String(id))
+          : Array.isArray(item.products)
+            ? item.products.map(product => String(product.id || product))
+            : [],
         slug: item.slug || '',
       });
     }
@@ -108,7 +113,11 @@ export default function EditMemorabilia() {
     try {
       await updateMemorabilia({ id, data: formData });
       success('Success', 'Memorabilia updated successfully!');
-      navigate('/admin/memorabilia');
+      
+      // Refresh the current page data instead of redirecting
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       error('Error', 'Failed to update memorabilia.');
     }
@@ -182,14 +191,15 @@ export default function EditMemorabilia() {
               <label key={product.id} className="flex items-center space-x-2 mb-1">
                 <input
                   type="checkbox"
-                  checked={formData.product_ids?.includes(product.id) || false}
+                  checked={formData.product_ids?.includes(String(product.id)) || false}
                   onChange={e => {
                     const checked = e.target.checked;
+                    const productId = String(product.id);
                     setFormData(prev => ({
                       ...prev,
                       product_ids: checked
-                        ? [...(prev.product_ids || []), product.id]
-                        : (prev.product_ids || []).filter(id => id !== product.id)
+                        ? [...(prev.product_ids || []), productId]
+                        : (prev.product_ids || []).filter(id => id !== productId)
                     }));
                   }}
                   className="rounded text-blue-600"
