@@ -1,8 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, ChevronLeft, ChevronRight, Expand, ImageIcon } from 'lucide-react';
-import Button from './Button';
-import { apiService } from '../../services/api';
-import { useMutation } from '../../hooks/useApi';
+import { Upload, X, Loader2, ImageIcon } from 'lucide-react';
+import OptimizedImage from './OptimizedImage';
 
 interface ImageUploaderProps {
   images: string[];
@@ -19,26 +17,9 @@ export default function ImageUploader({
   label = "Upload images",
   className = "" 
 }: ImageUploaderProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { mutate: uploadFile, loading: uploading } = useMutation(
-    async (file: File) => {
-      try {
-        return await apiService.uploadFile(file);
-      } catch (error) {
-        console.error('Upload failed:', error);
-        if (error instanceof Error && error.message.includes('Authentication')) {
-          // Redirect to login if authentication failed
-          window.location.href = '/admin/login';
-        }
-        throw error;
-      }
-    }
-  );
 
   const handleFiles = async (files: FileList) => {
     if (!files.length) return;
@@ -91,151 +72,49 @@ export default function ImageUploader({
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
 
-    // Upload all files in parallel, allow multiple images at once
-    const uploadPromises = Array.from(files).map(async (file) => {
-      try {
-        const result = await uploadFile(file);
-        return result.url;
-      } catch (error) {
-        console.error('Upload failed:', error);
-        return null;
-      }
-    });
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
 
-    try {
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const validUrls = uploadedUrls.filter(url => url !== null) as string[];
-      // Add all uploaded images at once, up to maxImages
-      onImagesChange([...images, ...validUrls].slice(0, maxImages));
-      if (validUrls.length > 0) {
-        console.log('Images uploaded:', validUrls);
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-    }
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (images.length >= maxImages) return;
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFiles(files);
     }
   };
 
-  const removeImage = async (index: number) => {
-    const imageUrl = images[index];
-    
-    try {
-      // Delete from server
-      await apiService.deleteFile(imageUrl);
-    } catch (error) {
-      console.error('Failed to delete file from server:', error);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFiles(files);
     }
+    // Reset the input value so the same file can be selected again
+    e.target.value = '';
+  };
 
-    // Remove from local state regardless of server response
+  const removeImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);
     onImagesChange(newImages);
-    
-    if (currentImageIndex >= newImages.length && newImages.length > 0) {
-      setCurrentImageIndex(newImages.length - 1);
-    } else if (newImages.length === 0) {
-      setCurrentImageIndex(0);
-    }
   };
-
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (images.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }
-  };
-
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (images.length > 1) {
-      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    }
-  };
-
-  const selectImage = (index: number) => {
-    setCurrentImageIndex(index);
-  };
-
-  const handleExpandGallery = () => {
-    setIsGalleryExpanded(true);
-  };
-
-  const closeExpandedGallery = () => {
-    setIsGalleryExpanded(false);
-  };
-
-  // Expanded Gallery Modal
-  const ExpandedGallery = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-      <div className="relative w-full h-full flex items-center justify-center p-4">
-        {/* Close Button */}
-        <button
-          onClick={closeExpandedGallery}
-          className="absolute top-4 right-4 bg-white bg-opacity-20 text-white p-2 rounded-full hover:bg-opacity-30 transition-all z-10"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        {/* Main Image */}
-        <div className="relative max-w-4xl max-h-full">
-          <img 
-            src={images[currentImageIndex]} 
-            alt={`Product ${currentImageIndex + 1}`}
-            className="max-w-full max-h-full object-contain"
-          />
-          
-          {/* Navigation Arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-20 text-white p-3 rounded-full hover:bg-opacity-30 transition-all"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-20 text-white p-3 rounded-full hover:bg-opacity-30 transition-all"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Thumbnail Strip */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-black bg-opacity-50 p-2 rounded-lg">
-          {images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => selectImage(index)}
-              className={`w-16 h-16 rounded overflow-hidden border-2 transition-all ${
-                index === currentImageIndex ? 'border-white' : 'border-transparent opacity-70 hover:opacity-100'
-              }`}
-            >
-              <img 
-                src={image} 
-                alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
-
-        {/* Image Counter */}
-        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-          {currentImageIndex + 1} / {images.length}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -322,9 +201,6 @@ export default function ImageUploader({
           {images.length} of {maxImages} images uploaded
         </p>
       )}
-
-      {/* Expanded Gallery Modal */}
-      {isGalleryExpanded && <ExpandedGallery />}
     </div>
   );
 }
