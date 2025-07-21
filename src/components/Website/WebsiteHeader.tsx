@@ -33,7 +33,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
   ];
 
   const handleNavigation = (href: string) => {
-    navigate(href);
+    window.location.href = href;
     setIsMobileMenuOpen(false);
   };
 
@@ -50,7 +50,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <div className="flex items-center">
-              <button onClick={() => navigate('/')} className="flex items-center">
+              <button onClick={() => window.location.href = '/'} className="flex items-center">
                 <OptimizedImage
                   src="/logo black and white.webp" 
                   alt="Reel Wheels Experience" 
@@ -88,7 +88,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
                 <Search className="h-5 w-5" />
               </button>
               <button
-                onClick={() => navigate('/favorites')}
+                onClick={() => window.location.href = '/favorites'}
                 className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
                 aria-label="Favorites"
                 title="View favorites"
@@ -113,7 +113,7 @@ export default function WebsiteHeader({ onSearchClick, variant = 'light', classN
                 <Search className="h-5 w-5" />
               </button>
               <button
-                onClick={() => navigate('/favorites')}
+                onClick={() => window.location.href = '/favorites'}
                 className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
                 aria-label="Favorites"
                 title="View favorites"

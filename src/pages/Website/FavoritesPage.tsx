@@ -34,7 +34,7 @@ export default function FavoritesPage() {
 
   const handleProductClick = (product: any) => {
     const type = product.product_types[0] || 'vehicle';
-    navigate(`/catalog/${type}/${product.slug}`);
+    window.location.href = `/catalog/${type}/${product.slug}`;
   };
 
   return (
@@ -56,7 +56,7 @@ export default function FavoritesPage() {
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
         <button
-          onClick={() => navigate('/catalog')}
+          onClick={() => window.location.href = '/catalog'}
           className="flex items-center text-blue-600 hover:text-blue-800"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -146,7 +146,7 @@ export default function FavoritesPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No favorites yet</h3>
             <p className="text-gray-500 mb-6">Start browsing and save your favorite items!</p>
             <button
-              onClick={() => navigate('/catalog')}
+              onClick={() => window.location.href = '/catalog'}
               className="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800"
             >
               Browse Catalog

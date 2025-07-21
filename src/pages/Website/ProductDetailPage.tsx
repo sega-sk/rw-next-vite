@@ -93,22 +93,22 @@ export default function ProductDetailPage() {
   };
 
   const handleMemorabiliaClick = (item: any) => {
-    // Navigate to memorabilia page - fix URL structure
+    // Navigate to memorabilia page - force page refresh
     if (item.slug) {
       window.location.href = `/memorabilia/${item.slug}`;
     } else {
-      // Navigate to product's memorabilia page if no individual slug
+      // Navigate to product's memorabilia page using correct URL pattern
       const type = currentProduct?.product_types?.[0] || 'vehicle';
       window.location.href = `/catalog/${type}/${slug}/memorabilia`;
     }
   };
 
   const handleMerchandiseClick = (item: any) => {
-    // Navigate to merchandise page - fix URL structure
+    // Navigate to merchandise page - force page refresh
     if (item.slug) {
       window.location.href = `/merchandise/${item.slug}`;
     } else {
-      // Navigate to product's merchandise page if no individual slug
+      // Navigate to product's merchandise page using correct URL pattern
       const type = currentProduct?.product_types?.[0] || 'vehicle';
       window.location.href = `/catalog/${type}/${slug}/merchandise`;
     }
@@ -441,7 +441,7 @@ export default function ProductDetailPage() {
                 Merchandise
               </h2>
               <button
-                onClick={() => navigate(`/merchandise/${currentProduct.slug}`)}
+                onClick={() => navigate(`/catalog/${currentProduct.type}/${currentProductslug}/merchandise`)}
                 className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
               >
                 View All →
@@ -500,7 +500,7 @@ export default function ProductDetailPage() {
                 Memorabilia
               </h2>
               <button
-                onClick={() => navigate(`/memorabilia/${currentProduct.slug}`)}
+                onClick={() => navigate(`/catalog/${currentProduct.type}/${currentProductslug}/memorabilia`)}
                 className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
               >
                 View All →
@@ -737,14 +737,14 @@ function getBgImage(product: any): string {
   if (product?.is_background_image_activated) {
     if (
       typeof window !== 'undefined' &&
-      window.innerWidth <= 600 &&
+      window.innerWidth <= 768 &&
       product.background_image_url_mobile &&
       product.is_background_image_mobile_activated
     )
       return product.background_image_url_mobile;
     if (
       typeof window !== 'undefined' &&
-      window.innerWidth <= 1024 &&
+      window.innerWidth <= 1440 &&
       product.background_image_url_tablet &&
       product.is_background_image_tablet_activated
     )

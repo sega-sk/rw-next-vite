@@ -228,18 +228,8 @@ export default function MerchandisePage() {
   }, [searchTerm, selectedFilters, sortBy]);
 
   const handleItemClick = (item: any) => {
-    // Show detailed information in alert or implement detail modal
-    const details = [
-      `Title: ${item.title}`,
-      item.subtitle ? `Subtitle: ${item.subtitle}` : '',
-      `Price: $${item.price}`,
-      item.description ? `Description: ${item.description}` : '',
-      item.keywords?.length ? `Keywords: ${item.keywords.join(', ')}` : '',
-      item.created_at ? `Created: ${new Date(item.created_at).toLocaleDateString()}` : '',
-      item.product_ids?.length ? `Connected to ${item.product_ids.length} products` : ''
-    ].filter(Boolean).join('\n\n');
-    
-    alert(`${item.title}\n\n${details}\n\nContact us to purchase this item!`);
+    // Navigate to standalone merchandise detail page with refresh
+    window.location.href = `/merchandise/${item.slug}`;
   };
 
   const handlePageChange = (page: number) => {
@@ -288,7 +278,7 @@ export default function MerchandisePage() {
           </p>
           {isProductSpecific && (
             <button
-              onClick={() => navigate(`/catalog/${productType}/${slug}`)}
+              onClick={() => window.location.href = `/catalog/${productType}/${slug}`}
               className="mt-4 text-blue-600 hover:text-blue-800 font-inter"
             >
               ← Back to {productData?.title}

@@ -27,7 +27,7 @@ export default function Homepage() {
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
   const handleViewCollection = () => {
-    navigate('/catalog');
+    window.location.href = '/catalog';
   };
 
   const handleContactFormSubmit = async (e: React.FormEvent) => {
@@ -166,7 +166,7 @@ export default function Homepage() {
               />
               <div className="flex mt-6">
               <button 
-                onClick={handleViewCollection}
+                onClick={() => window.location.href = '/catalog'}
                 className="bg-yellow-700 text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-inter font-medium mt-6"
               >
                 See "The Collection"

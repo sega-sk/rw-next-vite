@@ -101,7 +101,7 @@ export default function Dashboard() {
 
   const handleViewProduct = (product: any) => {
     const type = product.product_types[0] || 'vehicle';
-    window.open(`/catalog/${type}/${product.slug}`, '_blank');
+    window.location.href = `/catalog/${type}/${product.slug}`;
   };
 
   const dashboardStats = [

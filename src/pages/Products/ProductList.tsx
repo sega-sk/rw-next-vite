@@ -111,7 +111,7 @@ export default function ProductList() {
 
   const handleViewProduct = (product: any) => {
     const type = product.product_types[0] || 'vehicle';
-    navigate(`/catalog/${type}/${product.slug}`);
+    window.location.href = `/catalog/${type}/${product.slug}`;
   };
 
   const handleViewAllItems = () => {

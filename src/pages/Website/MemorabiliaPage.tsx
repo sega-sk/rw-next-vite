@@ -205,8 +205,8 @@ export default function MemorabiliaPage() {
   }, [searchTerm, selectedFilters, sortBy]);
 
   const handleItemClick = (item: any) => {
-    // For now, just show an alert or you can implement a detail modal
-    alert(`Viewing ${item.title} - Contact us for more details about this memorabilia item.`);
+    // Navigate to memorabilia detail page with refresh
+    window.location.href = `/memorabilia/${item.slug}`;
   };
 
   const handlePageChange = (page: number) => {

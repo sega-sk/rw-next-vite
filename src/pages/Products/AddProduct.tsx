@@ -134,6 +134,10 @@ export default function AddProduct() {
     images: [],
     background_image_url: '',
     is_background_image_activated: false,
+    background_image_url_tablet: '',
+    is_background_image_tablet_activated: false,
+    background_image_url_mobile: '',
+    is_background_image_mobile_activated: false,
     is_trending_model: false,
     is_on_homepage_slider: false,
     sale_price: 0,
@@ -153,6 +157,8 @@ export default function AddProduct() {
   const [newGenre, setNewGenre] = useState('');
   const [newMovie, setNewMovie] = useState('');
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
+  const [backgroundImagesTablet, setBackgroundImagesTablet] = useState<string[]>([]);
+  const [backgroundImagesMobile, setBackgroundImagesMobile] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [bgRemoving, setBgRemoving] = useState(false);
@@ -234,6 +240,10 @@ export default function AddProduct() {
         images: editProduct.images || [],
         background_image_url: editProduct.background_image_url || '',
         is_background_image_activated: !!editProduct.is_background_image_activated,
+        background_image_url_tablet: editProduct.background_image_url_tablet || '',
+        is_background_image_tablet_activated: !!editProduct.is_background_image_tablet_activated,
+        background_image_url_mobile: editProduct.background_image_url_mobile || '',
+        is_background_image_mobile_activated: !!editProduct.is_background_image_mobile_activated,
         is_trending_model: !!editProduct.is_trending_model,
         is_on_homepage_slider: !!editProduct.is_on_homepage_slider,
         sale_price: Number(editProduct.sale_price) || 0,
@@ -262,8 +272,15 @@ export default function AddProduct() {
             : [],
       });
       
+      // Set background images for uploaders
       if (editProduct.background_image_url) {
         setBackgroundImages([editProduct.background_image_url]);
+      }
+      if (editProduct.background_image_url_tablet) {
+        setBackgroundImagesTablet([editProduct.background_image_url_tablet]);
+      }
+      if (editProduct.background_image_url_mobile) {
+        setBackgroundImagesMobile([editProduct.background_image_url_mobile]);
       }
       
       if (editProduct.video_url) {
@@ -335,7 +352,16 @@ export default function AddProduct() {
     }
 
     try {
-      const cleanedPayload = cleanProductPayload(formData);
+      // Update form data with background images from uploaders
+      const updatedFormData = {
+        ...formData,
+        background_image_url: backgroundImages[0] || '',
+        background_image_url_tablet: backgroundImagesTablet[0] || '',
+        background_image_url_mobile: backgroundImagesMobile[0] || '',
+        video_url: videoUrl || ''
+      };
+
+      const cleanedPayload = cleanProductPayload(updatedFormData);
 
       if (isEditing && editProduct) {
         await updateProduct({
@@ -834,8 +860,90 @@ export default function AddProduct() {
                 </FormField>
               </div>
 
+              {/* Background Images Section */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-md font-semibold text-gray-900 mb-4">Background Images</h3>
+                
+                {/* Desktop Background Image */}
+                <div className="space-y-6">
+                  <FormField label="Desktop Background Image">
+                    <div className="space-y-3">
+                      <ImageUploader
+                        images={backgroundImages}
+                        onImagesChange={setBackgroundImages}
+                        maxImages={1}
+                        label="Upload desktop background image"
+                      />
+                      <label className="inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          name="is_background_image_activated"
+                          checked={formData.is_background_image_activated}
+                          onChange={handleInputChange}
+                          className="form-checkbox h-4 w-4 text-blue-600"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Activate desktop background image</span>
+                      </label>
+                    </div>
+                  </FormField>
+
+                  {/* Tablet Background Image */}
+                  <FormField label="Tablet Background Image">
+                    <div className="space-y-3">
+                      <ImageUploader
+                        images={backgroundImagesTablet}
+                        onImagesChange={setBackgroundImagesTablet}
+                        maxImages={1}
+                        label="Upload tablet background image"
+                      />
+                      <label className="inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          name="is_background_image_tablet_activated"
+                          checked={formData.is_background_image_tablet_activated}
+                          onChange={handleInputChange}
+                          className="form-checkbox h-4 w-4 text-blue-600"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Activate tablet background image</span>
+                      </label>
+                    </div>
+                  </FormField>
+
+                  {/* Mobile Background Image */}
+                  <FormField label="Mobile Background Image">
+                    <div className="space-y-3">
+                      <ImageUploader
+                        images={backgroundImagesMobile}
+                        onImagesChange={setBackgroundImagesMobile}
+                        maxImages={1}
+                        label="Upload mobile background image"
+                      />
+                      <label className="inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          name="is_background_image_mobile_activated"
+                          checked={formData.is_background_image_mobile_activated}
+                          onChange={handleInputChange}
+                          className="form-checkbox h-4 w-4 text-blue-600"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Activate mobile background image</span>
+                      </label>
+                    </div>
+                  </FormField>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>Background Images:</strong> These images will be used as backgrounds on the product detail page. 
+                    Upload high-quality images optimized for each device type. Only activated backgrounds will be displayed.
+                    <br />
+                    <strong>Recommended sizes:</strong> Desktop (1920x1080), Tablet (1024x768), Mobile (375x667)
+                  </p>
+                </div>
+              </div>
+
               {/* Video URL */}
-              <FormField label="Product Video URL">
+              <FormField label="Product Video URL" className="mt-6">
                 <Input
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
@@ -938,7 +1046,7 @@ export default function AddProduct() {
                     {bgRemoving ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
                     Cut Background (1st image)
                   </Button>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 hidden">
                     {isEditing && editProduct?.id
                       ? `(${2 - bgRemoveCount} left)`
                       : '(max 2 per product)'}

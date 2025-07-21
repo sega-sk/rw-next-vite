@@ -58,6 +58,10 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
               playsInline
               className="w-full h-48 md:h-64 object-cover"
               poster={images[0]}
+              onClick={() => {
+                const type = product.product_types[0] || 'vehicle';
+                window.location.href = `/catalog/${type}/${product.slug}`;
+              }}
             >
               <source src={product.video_url} type="video/mp4" />
               <img 
@@ -73,7 +77,10 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
             alt={product.title}
             size="card"
             className="no-transform-here w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-            onClick={() => onProductClick(product)}
+            onClick={() => {
+              const type = product.product_types[0] || 'vehicle';
+              window.location.href = `/catalog/${type}/${product.slug}`;
+            }}
           />
         )}
         
@@ -117,7 +124,10 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
         </button>
   
       </div>
-      <div className="p-4 md:p-6" onClick={() => onProductClick(product)}>
+      <div className="p-4 md:p-6" onClick={() => {
+        const type = product.product_types[0] || 'vehicle';
+        window.location.href = `/catalog/${type}/${product.slug}`;
+      }}>
         <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{product.title}</h3>
         <p className="text-sm mb-4 font-inter" style={{ color: '#636363' }}>{product.subtitle}</p>
         
