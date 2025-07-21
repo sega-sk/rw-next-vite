@@ -125,7 +125,7 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
         <div className="mb-4">
           {priceInfo.isCallForPrice ? (
             <div className="call-for-price text-center">
-              Call for Price
+              {false ? 'Call for Price' : ''}
             </div>
           ) : (
             <div className="text-center">

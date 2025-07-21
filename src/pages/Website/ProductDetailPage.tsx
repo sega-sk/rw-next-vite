@@ -441,7 +441,7 @@ export default function ProductDetailPage() {
                 Merchandise
               </h2>
               <button
-                onClick={() => navigate(`/${currentProduct.slug}/merchandise`)}
+                onClick={() => navigate(`/merchandise/${currentProduct.slug}`)}
                 className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
               >
                 View All →
@@ -500,7 +500,7 @@ export default function ProductDetailPage() {
                 Memorabilia
               </h2>
               <button
-                onClick={() => navigate(`/${currentProduct.slug}/memorabilia`)}
+                onClick={() => navigate(`/memorabilia/${currentProduct.slug}`)}
                 className="ml-4 text-blue-600 hover:text-blue-800 font-medium font-inter"
               >
                 View All →

@@ -87,7 +87,7 @@ export const formatPriceWithSale = (
   // If retail price is call for price
   if (isRetailCallForPrice) {
     return {
-      displayPrice: 'Call for Price',
+      displayPrice: false ? 'Call for Price' : '',
       isOnSale: false,
       isCallForPrice: true,
       shouldUseSmallFont: true

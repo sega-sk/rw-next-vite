@@ -362,28 +362,28 @@ export default function MemorabiliaPage() {
                   {item.description && (
                     <div className="mb-3">
                       <span className="text-xs font-medium text-gray-500 block mb-1">Description:</span>
-                      <p className="text-xs text-gray-700 line-clamp-3">{item.description}</p>
+                      <p className="text-xs text-gray-700">{item.description}</p>
                     </div>
                   )}
                   
-                  <div className="mb-2 text-xs text-gray-500">
+                  <div className="mb-2 text-xs text-gray-500 hidden">
                     <span className="font-medium">ID:</span> {item.id}
                   </div>
                   
                   {item.slug && (
-                    <div className="mb-2 text-xs text-gray-500">
+                    <div className="mb-2 text-xs text-gray-500 hidden">
                       <span className="font-medium">Slug:</span> {item.slug}
                     </div>
                   )}
                   
                   {item.created_at && (
-                    <div className="mb-2 text-xs text-gray-500">
+                    <div className="mb-2 text-xs text-gray-500 hidden">
                       <span className="font-medium">Created:</span> {new Date(item.created_at).toLocaleDateString()}
                     </div>
                   )}
                   
                   {item.updated_at && (
-                    <div className="mb-2 text-xs text-gray-500">
+                    <div className="mb-2 text-xs text-gray-500 hidden">
                       <span className="font-medium">Updated:</span> {new Date(item.updated_at).toLocaleDateString()}
                     </div>
                   )}
