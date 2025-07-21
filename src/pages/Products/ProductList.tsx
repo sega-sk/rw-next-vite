@@ -81,6 +81,7 @@ export default function ProductList() {
       if (searchTerm.trim() !== '') {
         refetchProducts();
       }
+      setCurrentPage(1);
     }, 500); // Increased debounce time
     return () => clearTimeout(timeoutId);
   }, [searchTerm]); // Removed refetchProducts dependency

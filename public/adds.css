@@ -396,7 +396,7 @@ body .product-detail-main-slider {
 
 @media(min-width: 1981px) {
   .product-hero-content h1 {
-    font-size: 200px;
+    font-size: 182px;
     line-height: 1.1;
   }
   .product-hero-content h2 {
@@ -1625,6 +1625,9 @@ footer a:hover {
   transform: none !important;
 }
 
+textarea.bg-white {
+  color: #000 !important;
+}
 /* Fix white background issues */
 .bg-white {
   background-color: #ffffff !important;

@@ -58,10 +58,10 @@ export default function LeadsList() {
     const timeoutId = setTimeout(() => {
       refetchLeads();
       setCurrentPage(1);
-    }, 300);
+    }, 500); // Increased debounce time
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, sortBy]);
+  }, [searchTerm, sortBy]); // Removed refetchLeads dependency
 
   const handleViewLead = (lead: Lead) => {
     setSelectedLead(lead);

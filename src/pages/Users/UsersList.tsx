@@ -63,7 +63,7 @@ export default function UsersList() {
     { 
       immediate: true,
       cacheKey: `users-list-${searchTerm}`,
-      cacheTTL: 15 * 1000,
+      cacheTTL: 15 * 1000, // 15 seconds
       staleWhileRevalidate: true
     }
   );
@@ -80,15 +80,17 @@ export default function UsersList() {
     (id: string) => apiService.deleteUser(id)
   );
 
-  // Search effect - Fixed debounce logic
+  // Search effect - Fixed debounce logic to prevent excessive refreshing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      refetchUsers();
+      if (searchTerm.trim() !== '') {
+        refetchUsers();
+      }
       setCurrentPage(1);
-    }, 300);
+    }, 500); // Increased debounce time
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, refetchUsers]);
+  }, [searchTerm]); // Removed refetchUsers dependency to prevent infinite loops
 
   // Debug logging to check API response
   useEffect(() => {
