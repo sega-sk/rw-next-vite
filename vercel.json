@@ -10,10 +10,6 @@
       "destination": "/assets/$1"
     },
     {
-      "source": "/(.*\\.(js|mjs|css|ts|tsx|jsx))$",
-      "destination": "/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -29,7 +25,7 @@
       ]
     },
     {
-      "source": "/(.*\\.(js|mjs))$",
+      "source": "/(.*)\\.js",
       "headers": [
         {
           "key": "Content-Type",
@@ -42,7 +38,20 @@
       ]
     },
     {
-      "source": "/(.*\\.css)$",
+      "source": "/(.*)\\.mjs",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.css",
       "headers": [
         {
           "key": "Content-Type",
@@ -51,15 +60,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.(ts|tsx|jsx))$",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
         }
       ]
     },
