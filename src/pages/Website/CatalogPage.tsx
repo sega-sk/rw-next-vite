@@ -91,6 +91,13 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
             ))}
           </div>
         )}
+
+        {/* Only show SALE badge if sale_price > 1000 */}
+        {product.sale_price && parseFloat(product.sale_price) > 1000 && (
+          <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
+            SALE
+          </div>
+        )}
         
         <button 
           className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
@@ -105,12 +112,7 @@ function ProductCard({ product, onProductClick, onFavoriteToggle, isFavorite }: 
             }`}
           />
         </button>
-        {/* Only show SALE badge if sale_price > 1000 */}
-        {product.sale_price && parseFloat(product.sale_price) > 1000 && (
-          <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
-            SALE
-          </div>
-        )}
+  
       </div>
       <div className="p-4 md:p-6" onClick={() => onProductClick(product)}>
         <h3 className="text-lg font-normal mb-2 font-inter" style={{ color: '#636363' }}>{product.title}</h3>
