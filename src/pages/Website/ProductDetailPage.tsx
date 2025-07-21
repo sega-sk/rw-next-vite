@@ -753,10 +753,10 @@ function getBgImage(product: any): string {
   }
   // Default backgrounds (public folder)
   if (typeof window !== 'undefined') {
-    if (window.innerWidth <= 428) {
+    if (window.innerWidth <= 767) {
       return '/reel_wheels_background_m.webp';
     }
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1248) {
       return '/reel_wheels_background_t.webp';
     }
   }

@@ -822,7 +822,7 @@ export default function AddProduct() {
               />
               {/* --- Remove Background Action --- */}
               {formData.images[0] && (
-                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-4 flex items-center gap-3 remove-background-action">
                   <Button
                     type="button"
                     variant="outline"
