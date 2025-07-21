@@ -122,7 +122,7 @@ function MerchandiseCard({ item, onItemClick, onFavoriteToggle, isFavorite }: {
 }
 
 export default function MerchandisePage() {
-  const { slug, productType } = useParams(); // Add productType from route
+  const { slug, productType } = useParams(); // Get both params
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -137,6 +137,15 @@ export default function MerchandisePage() {
 
   // Check if this is a product-specific merchandise page
   const isProductSpecific = !!productType && !!slug;
+
+  // Handle standalone merchandise detail page
+  useEffect(() => {
+    // If we have slug but no productType, this is a standalone merchandise detail
+    if (slug && !productType) {
+      // This should be handled by MerchandiseDetailPage route
+      return;
+    }
+  }, [slug, productType, navigate]);
 
   // If on a product's merchandise page, don't redirect
   useEffect(() => {
@@ -260,7 +269,7 @@ export default function MerchandisePage() {
         title={`${isProductSpecific ? `${productData?.title} - ` : ''}Movie Merchandise Collection - Reel Wheels Experience`}
         description={`Browse our exclusive collection of ${isProductSpecific ? `${productData?.title} ` : ''}authentic movie merchandise. Find unique items from your favorite films.`}
         keywords="movie merchandise, film items, movie collectibles, Hollywood merchandise"
-        url={`https://reelwheelsexperience.com/merchandise${isProductSpecific ? `/${slug}` : ''}`}
+        url={`https://reelwheelsexperience.com${isProductSpecific ? `/catalog/${productType}/${slug}/merchandise` : '/merchandise'}`}
       />
       
       <WebsiteHeader 

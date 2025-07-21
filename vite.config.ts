@@ -19,6 +19,9 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
         },
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
   },
@@ -31,5 +34,12 @@ export default defineConfig({
         secure: false,
       },
     },
+    fs: {
+      strict: false,
+    },
+  },
+  preview: {
+    host: true,
+    port: 4173,
   },
 });

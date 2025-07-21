@@ -580,6 +580,7 @@ html {
   max-width: 1280px !important;
   padding-left: 1.5rem !important;
   padding-right: 1.5rem !important;
+  margin: 0 auto;
 }
 
 /* Force full width for the image container specifically */

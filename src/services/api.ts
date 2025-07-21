@@ -425,10 +425,17 @@ class ApiService {
   // Add the missing clear background method
   async clearProductBackground(id: string): Promise<Product> {
     try {
+      // Ensure we have authentication token
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('Authentication required. Please login again.');
+      }
+
       const result = await this.makeAuthenticatedRequest(`/v1/products/${id}/clear-background`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       }) as Product;
       
@@ -436,8 +443,17 @@ class ApiService {
       invalidateProductCache();
       
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to clear product background:', error);
+      
+      // Handle authentication errors specifically
+      if (error.status === 401 || error.message?.includes('401')) {
+        // Clear invalid token
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        throw new Error('Authentication expired. Please login again.');
+      }
+      
       throw error;
     }
   }

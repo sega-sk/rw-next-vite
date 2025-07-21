@@ -65,6 +65,9 @@
     <link rel="preload" href="/reel wheel hero_first slide.webp" as="image" type="image/webp" />
     <link rel="preload" href="/logo black and white.webp" as="image" type="image/webp" />
     
+    <!-- Add module preload for main script -->
+    <link rel="modulepreload" href="/src/main.tsx" />
+    
     <!-- Schema.org structured data -->
     <script type="application/ld+json">
     {
@@ -138,6 +141,8 @@
     </noscript>
     <div id="root" role="application"></div>
     <div id="main-content"></div>
+    
+    <!-- Ensure proper module type loading -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

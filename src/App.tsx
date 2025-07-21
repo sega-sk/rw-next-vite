@@ -42,114 +42,121 @@ function App() {
         <FavoritesProvider>
           <Router>
             <Routes>
-            {/* Main Website Routes */}
-            <Route path="/" element={<Homepage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/catalog/:productType" element={<CatalogPage />} />
-            <Route path="/catalog/:productType/:slug" element={<ProductDetailPage />} />
-            <Route path="/product/:productType/:slug" element={<ProductDetailPage />} />
-            <Route path="/memorabilia" element={<MemorabiliaPage />} />
-            <Route path="/memorabilia/:productType/:slug" element={<MemorabiliaPage />} />
-            <Route path="/merchandise" element={<MerchandisePage />} />
-            <Route path="/merchandise/:productType/:slug" element={<MerchandisePage />} />
-            <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            
-            {/* Admin Login Route - Public Access */}
-            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-            <Route path="/admin/login" element={<LoginPage />} />
+              {/* Public Website Routes */}
+              <Route path="/" element={<Homepage />} />
+              <Route path="/catalog" element={<CatalogPage />} />
+              <Route path="/catalog/:productType" element={<CatalogPage />} />
+              <Route path="/catalog/:productType/:slug" element={<ProductDetailPage />} />
+              
+              {/* Product-specific memorabilia and merchandise routes */}
+              <Route path="/catalog/:productType/:slug/memorabilia" element={<MemorabiliaPage />} />
+              <Route path="/catalog/:productType/:slug/merchandise" element={<MerchandisePage />} />
+              
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
+              
+              {/* Standalone memorabilia and merchandise pages */}
+              <Route path="/memorabilia" element={<MemorabiliaPage />} />
+              <Route path="/memorabilia/:slug" element={<MemorabiliaPage />} />
+              <Route path="/merchandise" element={<MerchandisePage />} />
+              <Route path="/merchandise/:slug" element={<MerchandisePage />} />
+              
+              <Route path="/contact" element={<MemorabiliaPage />} />
 
-            {/* Protected Admin Dashboard Routes */}
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute>
-                <Layout title="Dashboard"><Dashboard /></Layout>
-              </ProtectedRoute> 
-            } />
-            
-            <Route path="/admin/products/add" element={
-              <ProtectedRoute>
-                <Layout title="Add Product" breadcrumb={['Dashboard', 'Add Product']}>
-                  <AddProduct />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/products" element={
-              <ProtectedRoute>
-                <Layout title="Add Product" breadcrumb={['Dashboard', 'Add Product']}>
-                  <AddProduct />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/product-list" element={
-              <ProtectedRoute>
-                <Layout title="Products List" breadcrumb={['Dashboard', 'Product list']}><ProductList /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/memorabilia" element={
-              <ProtectedRoute>
-                <Layout title="Memorabilia List" breadcrumb={['Dashboard', 'Memorabilia']}><MemorabiliaList /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/memorabilia/add" element={
-              <ProtectedRoute>
-                <Layout title="Add Memorabilia" breadcrumb={['Dashboard', 'Memorabilia', 'Add']}><AddMemorabilia /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/memorabilia/edit/:id" element={
-              <ProtectedRoute>
-                <Layout title="Edit Memorabilia" breadcrumb={['Dashboard', 'Memorabilia', 'Edit']}><EditMemorabilia /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/merchandise" element={
-              <ProtectedRoute>
-                <Layout title="Merchandise" breadcrumb={['Dashboard', 'Merchandise']}><MerchandiseList /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/merchandise/add" element={
-              <ProtectedRoute>
-                <Layout title="Add Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Add']}><AddMerchandise /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/merchandise/edit/:id" element={
-              <ProtectedRoute>
-                <Layout title="Edit Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Edit']}><EditMerchandise /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/leads" element={
-              <ProtectedRoute>
-                <Layout title="Leads Management" breadcrumb={['Dashboard', 'Leads']}><LeadsList /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/profile" element={
-              <ProtectedRoute>
-                <Layout title="Profile Settings" breadcrumb={['Dashboard', 'Profile']}><ProfilePage /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/users" element={
-              <ProtectedRoute>
-                <Layout title="User Management" breadcrumb={['Dashboard', 'Users']}><UsersList /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin/users/add" element={
-              <ProtectedRoute>
-                <Layout title="Add User" breadcrumb={['Dashboard', 'Users', 'Add']}><AddUser /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFoundPage />} />
+              {/* Admin Routes */}
+              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+              <Route path="/admin/login" element={<LoginPage />} />
+              
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute>
+                  <Layout title="Dashboard"><Dashboard /></Layout>
+                </ProtectedRoute> 
+              } />
+              
+              <Route path="/admin/products/add" element={
+                <ProtectedRoute>
+                  <Layout title="Add Product" breadcrumb={['Dashboard', 'Add Product']}>
+                    <AddProduct />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/products" element={
+                <ProtectedRoute>
+                  <Layout title="Add Product" breadcrumb={['Dashboard', 'Add Product']}>
+                    <AddProduct />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/product-list" element={
+                <ProtectedRoute>
+                  <Layout title="Products List" breadcrumb={['Dashboard', 'Product list']}><ProductList /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/memorabilia" element={
+                <ProtectedRoute>
+                  <Layout title="Memorabilia List" breadcrumb={['Dashboard', 'Memorabilia']}><MemorabiliaList /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/memorabilia/add" element={
+                <ProtectedRoute>
+                  <Layout title="Add Memorabilia" breadcrumb={['Dashboard', 'Memorabilia', 'Add']}><AddMemorabilia /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/memorabilia/edit/:id" element={
+                <ProtectedRoute>
+                  <Layout title="Edit Memorabilia" breadcrumb={['Dashboard', 'Memorabilia', 'Edit']}><EditMemorabilia /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/merchandise" element={
+                <ProtectedRoute>
+                  <Layout title="Merchandise" breadcrumb={['Dashboard', 'Merchandise']}><MerchandiseList /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/merchandise/add" element={
+                <ProtectedRoute>
+                  <Layout title="Add Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Add']}><AddMerchandise /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/merchandise/edit/:id" element={
+                <ProtectedRoute>
+                  <Layout title="Edit Merchandise" breadcrumb={['Dashboard', 'Merchandise', 'Edit']}><EditMerchandise /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/leads" element={
+                <ProtectedRoute>
+                  <Layout title="Leads Management" breadcrumb={['Dashboard', 'Leads']}><LeadsList /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/profile" element={
+                <ProtectedRoute>
+                  <Layout title="Profile Settings" breadcrumb={['Dashboard', 'Profile']}><ProfilePage /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/users" element={
+                <ProtectedRoute>
+                  <Layout title="User Management" breadcrumb={['Dashboard', 'Users']}><UsersList /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/users/add" element={
+                <ProtectedRoute>
+                  <Layout title="Add User" breadcrumb={['Dashboard', 'Users', 'Add']}><AddUser /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Router>
         </FavoritesProvider>

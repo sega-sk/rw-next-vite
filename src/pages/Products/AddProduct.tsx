@@ -425,7 +425,15 @@ export default function AddProduct() {
     }
     setBgRemoving(true);
     try {
-      // Use the correct API endpoint - it should be the API service, not a local endpoint
+      // Check authentication first
+      if (!isAuthenticated) {
+        setBgRemoveError('Please login to remove background');
+        error('Authentication Required', 'Please login to remove background');
+        navigate('/admin/login');
+        return;
+      }
+
+      // Use the authenticated API service instead of direct call
       const result = await apiService.clearProductBackground(editProduct?.id || '');
       
       // The API returns the full updated product object
@@ -448,8 +456,27 @@ export default function AddProduct() {
       }
     } catch (err: any) {
       console.error('Background removal error:', err);
-      setBgRemoveError(err.message || 'Failed to remove background');
-      error('Background Removal Failed', err.message || 'Failed to remove background. Please try again.');
+      let errorMessage = 'Failed to remove background';
+      
+      // Handle specific error types
+      if (err.status === 401 || err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+        errorMessage = 'Authentication failed. Please login again.';
+        setBgRemoveError(errorMessage);
+        error('Authentication Failed', errorMessage);
+        navigate('/admin/login');
+      } else if (err.status === 403) {
+        errorMessage = 'Permission denied. You don\'t have access to this feature.';
+        setBgRemoveError(errorMessage);
+        error('Permission Denied', errorMessage);
+      } else if (err.status === 404) {
+        errorMessage = 'Product not found or background removal not available.';
+        setBgRemoveError(errorMessage);
+        error('Product Not Found', errorMessage);
+      } else {
+        errorMessage = err.message || errorMessage;
+        setBgRemoveError(errorMessage);
+        error('Background Removal Failed', errorMessage);
+      }
     } finally {
       setBgRemoving(false);
     }

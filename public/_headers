@@ -1,21 +1,50 @@
-# Cache Headers for Assets
-/assets/*
+# JavaScript Module Files
+/*.js
+  Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-/*.js
-  Cache-Control: public, max-age=31536000
+/*.mjs
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
 
+/*.ts
+  Content-Type: application/javascript; charset=utf-8
+
+/*.tsx
+  Content-Type: application/javascript; charset=utf-8
+
+/*.jsx
+  Content-Type: application/javascript; charset=utf-8
+
+# CSS Files
 /*.css
-  Cache-Control: public, max-age=31536000
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
 
+# Image Files
 /*.webp
-  Cache-Control: public, max-age=31536000
+  Content-Type: image/webp
+  Cache-Control: public, max-age=31536000, immutable
 
 /*.png
-  Cache-Control: public, max-age=31536000
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
 
 /*.jpg
-  Cache-Control: public, max-age=31536000
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpeg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=31536000, immutable
+
+# Assets Directory
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
 
 # No Cache for Admin Pages
 /admin/*

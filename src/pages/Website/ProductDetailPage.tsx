@@ -93,13 +93,25 @@ export default function ProductDetailPage() {
   };
 
   const handleMemorabiliaClick = (item: any) => {
-    // Navigate to memorabilia page
-    window.location.href = `/memorabilia/${item.slug || item.id}`;
+    // Navigate to memorabilia page - fix URL structure
+    if (item.slug) {
+      window.location.href = `/memorabilia/${item.slug}`;
+    } else {
+      // Navigate to product's memorabilia page if no individual slug
+      const type = currentProduct?.product_types?.[0] || 'vehicle';
+      window.location.href = `/catalog/${type}/${slug}/memorabilia`;
+    }
   };
 
   const handleMerchandiseClick = (item: any) => {
-    // Navigate to merchandise page
-    window.location.href = `/merchandise/${item.slug || item.id}`;
+    // Navigate to merchandise page - fix URL structure
+    if (item.slug) {
+      window.location.href = `/merchandise/${item.slug}`;
+    } else {
+      // Navigate to product's merchandise page if no individual slug
+      const type = currentProduct?.product_types?.[0] || 'vehicle';
+      window.location.href = `/catalog/${type}/${slug}/merchandise`;
+    }
   };
 
   // Helper to determine if price should be shown

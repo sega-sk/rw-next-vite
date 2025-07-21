@@ -116,7 +116,7 @@ function MemorabiliaCard({ item, onItemClick, onFavoriteToggle, isFavorite }: {
 }
 
 export default function MemorabiliaPage() {
-  const { slug, productType } = useParams(); // Add productType from route
+  const { slug, productType } = useParams(); // Get both params
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -132,13 +132,14 @@ export default function MemorabiliaPage() {
   // Check if this is a product-specific memorabilia page
   const isProductSpecific = !!productType && !!slug;
 
-  // If on a product's memorabilia page, don't redirect
+  // Handle standalone memorabilia detail page
   useEffect(() => {
-    if (slug && !isProductSpecific) {
-      // This is a memorabilia detail page, redirect to main memorabilia page for now
-      navigate('/memorabilia');
+    // If we have slug but no productType, this is a standalone memorabilia detail
+    if (slug && !productType) {
+      // This should be handled by MemorabiliaDetailPage route
+      return;
     }
-  }, [slug, isProductSpecific, navigate]);
+  }, [slug, productType, navigate]);
 
   // Fetch all memorabilia for filtering
   const { data: memorabiliaData, loading, execute: refetchMemorabilia } = useApi(
@@ -235,7 +236,7 @@ export default function MemorabiliaPage() {
         title={`${isProductSpecific ? `${productData?.title} - ` : ''}Movie Memorabilia Collection - Reel Wheels Experience`}
         description={`Browse our exclusive collection of ${isProductSpecific ? `${productData?.title} ` : ''}authentic movie memorabilia. From props to costumes, find unique pieces from your favorite films.`}
         keywords="movie memorabilia, film props, movie costumes, Hollywood collectibles, cinema artifacts"
-        url={`https://reelwheelsexperience.com/memorabilia${isProductSpecific ? `/${slug}` : ''}`}
+        url={`https://reelwheelsexperience.com${isProductSpecific ? `/catalog/${productType}/${slug}/memorabilia` : '/memorabilia'}`}
       />
       
       <WebsiteHeader 

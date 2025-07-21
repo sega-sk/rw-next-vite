@@ -207,8 +207,17 @@ export class ReelWheelApiClient {
   }
 
   async clearProductBackground(productId: string): Promise<ProductRead> {
+    // Ensure we have authentication
+    if (!this.accessToken) {
+      throw new ApiError(401, 'Unauthorized', { detail: 'Authentication required' });
+    }
+
     return this.request<ProductRead>(`/v1/products/${productId}/clear-background`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json'
+      }
     });
   }
 

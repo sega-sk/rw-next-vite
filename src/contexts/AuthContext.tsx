@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 
@@ -14,6 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  checkAuthStatus: () => Promise<boolean>; // Add this line
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Check if user is already authenticated on app start
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('User is authenticated');
           const currentUser = authService.getCurrentUser();
           setUser(currentUser);
+          setIsAuthenticated(true);
         } else {
           console.log('No authentication found');
         }
@@ -51,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('AuthService logout callback triggered');
       setUser(null);
       setIsLoading(false);
+      setIsAuthenticated(false);
     };
 
     authService.setOnLogout(handleLogout);
@@ -72,6 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Set user data after successful login
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
+      setIsAuthenticated(true);
       
     } catch (error) {
       console.error('Login failed:', error);
@@ -84,15 +89,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     authService.logout();
     setUser(null);
+    setIsAuthenticated(false);
     console.log('Logged out successfully');
   };
 
+  // Add a method to check if token is valid
+  const checkAuthStatus = useCallback(async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsAuthenticated(false);
+      setUser(null);
+      return false;
+    }
+
+    try {
+      // Try to make an authenticated request to verify token
+      const response = await fetch('https://reel-wheel-api-x92jj.ondigitalocean.app/v1/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        throw new Error('Invalid token');
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setIsAuthenticated(false);
+      setUser(null);
+      return false;
+    }
+  }, []);
+
+  // Update the value to include checkAuthStatus
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     login,
     logout,
+    checkAuthStatus // Add this to the context value
   };
 
   return (

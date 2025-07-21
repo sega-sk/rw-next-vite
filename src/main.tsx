@@ -16,6 +16,16 @@ console.log('%c⚡ SeGa Dev.', 'color: #3b82f6; font-size: 11px; font-weight: bo
 console.log('%c🚀 Powered by DealerTower', 'color: #10b981; font-size: 14px;');
 console.log('%c📧 Contact: https://dealertower.com', 'color: #6b7280; font-size: 12px;');
 
+// Error handling for module loading
+window.addEventListener('error', (e) => {
+  if (e.message.includes('Expected a JavaScript module script')) {
+    console.warn('Module loading error detected, attempting recovery...');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  }
+});
+
 // Register service worker for caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -60,20 +70,51 @@ const preloadCriticalResources = () => {
 };
 
 // Client-side Cache Busting
-const BUILD_VERSION = '2025-07-16-15'; // Update this on each deploy
+const BUILD_VERSION = '2025-07-21-1'; // Update this on each deploy
 
 if (localStorage.getItem('build-version') !== BUILD_VERSION) {
   localStorage.clear();
   localStorage.setItem('build-version', BUILD_VERSION);
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  </StrictMode>
-);
+// Enhanced error boundary for React
+const createRootWithErrorHandling = () => {
+  try {
+    const container = document.getElementById('root');
+    if (!container) {
+      throw new Error('Root container not found');
+    }
+    
+    const root = createRoot(container);
+    
+    root.render(
+      <StrictMode>
+        <HelmetProvider>
+          <App />
+        </HelmetProvider>
+      </StrictMode>
+    );
+  } catch (error) {
+    console.error('Failed to render app:', error);
+    // Fallback rendering
+    const container = document.getElementById('root');
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 20px; font-family: sans-serif;">
+          <h1>Loading...</h1>
+          <p>Please wait while we load the application.</p>
+        </div>
+      `;
+    }
+    // Retry after a delay
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  }
+};
+
+// Initialize the app
+createRootWithErrorHandling();
 
 // Initialize performance optimizations
 if (document.readyState === 'loading') {
