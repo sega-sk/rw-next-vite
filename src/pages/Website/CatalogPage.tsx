@@ -205,7 +205,7 @@ export default function CatalogPage() {
   });
   const [sortBy, setSortBy] = useState('Featured');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 9;
   const { toggleFavorite, isFavorite } = useFavorites();
 
   // Fetch products with filters - Fix the API call
